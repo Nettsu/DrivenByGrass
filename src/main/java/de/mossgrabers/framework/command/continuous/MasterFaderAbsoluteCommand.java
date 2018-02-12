@@ -36,6 +36,6 @@ public class MasterFaderAbsoluteCommand<S extends ControlSurface<C>, C extends C
     @Override
     public void execute (final int value)
     {
-        this.model.getMasterTrack ().setVolume (value);
+        this.model.getMasterTrack ().setVolume (value, 161);
     }
 }

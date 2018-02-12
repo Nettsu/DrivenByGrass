@@ -89,6 +89,16 @@ public class MasterTrackProxy extends TrackData
         this.track.getVolume ().set (Double.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
     }
 
+    /**
+     * Set the volume.
+     *
+     * @param value The new value
+     * @param upperBound The upper bound
+     */
+    public void setVolume (final double value, final int upperBound)
+    {
+        this.track.getVolume ().set (Double.valueOf (value), Integer.valueOf (upperBound));
+    }
 
     /**
      * Reset the volume to its default value.

@@ -35,8 +35,8 @@ public class SessionView extends AbstractSessionView<APCControlSurface, APCConfi
         {
             final SessionColor isRecording = new SessionColor (APCColors.APC_MKII_COLOR_RED_HI, APCColors.APC_MKII_COLOR_RED_HI, false);
             final SessionColor isRecordingQueued = new SessionColor (APCColors.APC_MKII_COLOR_RED_HI, APCColors.APC_MKII_COLOR_RED_HI, true);
-            final SessionColor isPlaying = new SessionColor (APCColors.APC_MKII_COLOR_GREEN_HI, APCColors.APC_MKII_COLOR_GREEN_HI, false);
-            final SessionColor isPlayingQueued = new SessionColor (APCColors.APC_MKII_COLOR_GREEN_HI, APCColors.APC_MKII_COLOR_GREEN_HI, true);
+            final SessionColor isPlaying = new SessionColor (APCColors.APC_MKII_COLOR_WHITE, APCColors.APC_MKII_COLOR_WHITE, false);
+            final SessionColor isPlayingQueued = new SessionColor (APCColors.APC_MKII_COLOR_WHITE, APCColors.APC_MKII_COLOR_WHITE, true);
             final SessionColor hasContent = new SessionColor (APCColors.APC_MKII_COLOR_AMBER, -1, false);
             final SessionColor noContent = new SessionColor (APCColors.APC_MKII_COLOR_BLACK, -1, false);
             final SessionColor recArmed = new SessionColor (APCColors.APC_MKII_COLOR_RED_LO, -1, false);

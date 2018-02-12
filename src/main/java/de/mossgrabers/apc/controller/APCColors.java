@@ -100,6 +100,7 @@ public class APCColors
     public static final int    APC_MKII_COLOR_PINK_HI          = 57;
     public static final int    APC_MKII_COLOR_PINK             = 58;
     public static final int    APC_MKII_COLOR_PINK_LO          = 59;
+    public static final int    APC_MKII_COLOR_BLUE_ORCHID_ALT  = 104;
 
     public static final String COLOR_VIEW_SELECTED             = "COLOR_VIEW_SELECTED";
     public static final String COLOR_VIEW_UNSELECTED           = "COLOR_VIEW_UNSELECTED";
@@ -166,16 +167,16 @@ public class APCColors
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_DARK_BROWN, APC_MKII_COLOR_AMBER_LO);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_BROWN, APC_MKII_COLOR_AMBER_YELLOW);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_DARK_BLUE, APC_MKII_COLOR_OCEAN);
-            colorManager.registerColor (BitwigColors.BITWIG_COLOR_PURPLE_BLUE, APC_MKII_COLOR_OCEAN_BLUE);
-            colorManager.registerColor (BitwigColors.BITWIG_COLOR_PURPLE, APC_MKII_COLOR_PINK);
-            colorManager.registerColor (BitwigColors.BITWIG_COLOR_PINK, APC_MKII_COLOR_PINK_HI);
-            colorManager.registerColor (BitwigColors.BITWIG_COLOR_RED, APC_MKII_COLOR_RED);
+            colorManager.registerColor (BitwigColors.BITWIG_COLOR_PURPLE_BLUE, APC_MKII_COLOR_BLUE_ORCHID_ALT);
+            colorManager.registerColor (BitwigColors.BITWIG_COLOR_PURPLE, APC_MKII_COLOR_ORCHID);
+            colorManager.registerColor (BitwigColors.BITWIG_COLOR_PINK, APC_MKII_COLOR_PINK);
+            colorManager.registerColor (BitwigColors.BITWIG_COLOR_RED, APC_MKII_COLOR_RED_LO);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_ORANGE, APC_MKII_COLOR_AMBER);
-            colorManager.registerColor (BitwigColors.BITWIG_COLOR_LIGHT_ORANGE, APC_MKII_COLOR_RED_LO);
+            colorManager.registerColor (BitwigColors.BITWIG_COLOR_LIGHT_ORANGE, APC_MKII_COLOR_YELLOW);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_MOSS_GREEN, APC_MKII_COLOR_LIME_LO);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_GREEN, APC_MKII_COLOR_SPRING);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_COLD_GREEN, APC_MKII_COLOR_TURQUOISE);
-            colorManager.registerColor (BitwigColors.BITWIG_COLOR_BLUE, APC_MKII_COLOR_SKY_HI);
+            colorManager.registerColor (BitwigColors.BITWIG_COLOR_BLUE, APC_MKII_COLOR_SKY);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_LIGHT_PURPLE, APC_MKII_COLOR_BLUE_ORCHID);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_LIGHT_PINK, APC_MKII_COLOR_MAGENTA_PINK);
             colorManager.registerColor (BitwigColors.BITWIG_COLOR_SKIN, APC_MKII_COLOR_ROSE);

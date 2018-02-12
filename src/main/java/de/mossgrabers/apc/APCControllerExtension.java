@@ -334,7 +334,7 @@ public class APCControllerExtension extends AbstractControllerExtension<APCContr
         this.getHost ().scheduleTask ( () -> {
             final APCControlSurface surface = this.getSurface ();
             surface.getModeManager ().setActiveMode (Modes.MODE_PAN);
-            surface.getViewManager ().setActiveView (Views.VIEW_PLAY);
+            surface.getViewManager ().setActiveView (Views.VIEW_SESSION);
         }, 100);
     }
 

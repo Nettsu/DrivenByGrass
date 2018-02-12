@@ -39,9 +39,14 @@ public class SendMode extends BaseMode
     @Override
     public void setValue (final int index, final int value)
     {
+		// hack for the lagging send knob bug in bitwig
+		int valueHacked = value;
+		if (valueHacked == 0)
+			valueHacked = 1;
+			
         final AbstractTrackBankProxy currentTrackBank = this.model.getCurrentTrackBank ();
         if (currentTrackBank instanceof TrackBankProxy)
-            ((TrackBankProxy) currentTrackBank).setSend (index, this.sendIndex, value);
+            ((TrackBankProxy) currentTrackBank).setSend (index, this.sendIndex, valueHacked);
     }
 
 

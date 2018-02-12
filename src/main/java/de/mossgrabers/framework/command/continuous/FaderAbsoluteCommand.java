@@ -53,6 +53,6 @@ public class FaderAbsoluteCommand<S extends ControlSurface<C>, C extends Configu
             this.surface.getDisplay ().notify (volume < value ? "Move down" : volume > value ? "Move up" : "Perfect!");
         }
         else
-            currentTrackBank.setVolume (this.index, value);
+            currentTrackBank.setVolume (this.index, value, 161);
     }
 }
