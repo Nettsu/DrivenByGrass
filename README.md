@@ -1,5 +1,11 @@
-# DrivenByMoss
-Bitwig Studio extensions to support several controllers
+# DrivenByGrass
+Bitwig Studio extensions to support several controllers. This is a fork of DrivenByMoss by Jürgen Moßgraber, 
+I made some changes to the APC40 mk2 controller specific to my Bitwig workflow, which include:
+- Changing the ninth column from launching scenes to launching clips of the ninth track
+- All faders now go up to 0db, instead of +6db
+- The default view is now session view
+- Changed colors to match Bitwig more closely, and changed playing clip color to white
+- 'Pan' mode is now used to control the first remote control on each track
 
 ### Building and Installing the extension
 
