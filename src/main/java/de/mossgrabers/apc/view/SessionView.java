@@ -29,7 +29,7 @@ public class SessionView extends AbstractSessionView<APCControlSurface, APCConfi
      */
     public SessionView (final APCControlSurface surface, final Model model)
     {
-        super ("Session", surface, model, 5, 8, surface.isMkII ());
+        super ("Session", surface, model, 5, 9, surface.isMkII ());
 
         if (surface.isMkII ())
         {
@@ -62,11 +62,12 @@ public class SessionView extends AbstractSessionView<APCControlSurface, APCConfi
     {
         if (event == ButtonEvent.DOWN)
         {
-            this.model.getCurrentTrackBank ().launchScene (scene);
-            this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1 + scene, ColorManager.BUTTON_STATE_ON);
+            //this.model.getCurrentTrackBank ().launchScene (scene);
+            this.model.getCurrentTrackBank ().launchClip (8, scene);
+            //this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1 + scene, ColorManager.BUTTON_STATE_ON);
         }
-        else if (event == ButtonEvent.UP)
-            this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1 + scene, ColorManager.BUTTON_STATE_OFF);
+        //else if (event == ButtonEvent.UP)
+            //this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1 + scene, ColorManager.BUTTON_STATE_OFF);
     }
 
 
@@ -74,11 +75,11 @@ public class SessionView extends AbstractSessionView<APCControlSurface, APCConfi
     @Override
     public void updateSceneButtons ()
     {
-        final int green = this.surface.isMkII () ? APCColors.APC_MKII_COLOR_GREEN : APCColors.APC_COLOR_GREEN;
+        /*final int green = this.surface.isMkII () ? APCColors.APC_MKII_COLOR_GREEN : APCColors.APC_COLOR_GREEN;
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1, green);
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_2, green);
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_3, green);
         this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_4, green);
-        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_5, green);
+        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_5, green);*/
     }
 }

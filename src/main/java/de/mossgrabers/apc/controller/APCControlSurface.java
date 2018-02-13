@@ -11,6 +11,7 @@ import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.midi.MidiInput;
 import de.mossgrabers.framework.midi.MidiOutput;
 import de.mossgrabers.framework.view.View;
+import de.mossgrabers.apc.view.Views;
 
 import com.bitwig.extension.controller.api.ControllerHost;
 
@@ -221,18 +222,28 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
         this.output.sendSysex ("F0 47 7F " + (isMkII ? ID_APC_40_MKII : ID_APC_40) + " 60 00 04 41 08 02 01 F7");
     }
 
-
     public boolean isMkII ()
     {
         return this.isMkII;
     }
-
+    
+    public ControllerHost getHost ()
+    {
+        return host;
+    }
 
     /** {@inheritDoc} */
     @Override
     public boolean isGridNote (final int note)
     {
-        return (note <= 39 && super.isGridNote (36 + note)) || (note >= 82 && note <= 86);
+		if (this.viewManager.isActiveView (Views.VIEW_SESSION))
+		{
+			return (note <= 39 && super.isGridNote (36 + note)) || (note >= 82 && note <= 86);
+		}
+		else
+		{
+			return (note <= 39 && super.isGridNote (36 + note));
+		}
     }
 
 
@@ -240,7 +251,27 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
     @Override
     protected void handleGridNote (final int note, final int velocity)
     {
-        super.handleGridNote (36 + note, velocity);
+		int noteMapped = note;
+		
+		if (this.viewManager.isActiveView (Views.VIEW_SESSION))
+		{
+			if (note <= 39)
+			{
+				// if part of original grid note
+				// add one to the note number for each row
+				noteMapped = note + note / 8;
+			}
+			else
+			{
+				// else map scene launch notes to an imaginary ninth column
+				noteMapped = (86 - note) * 9 + 8;
+			}
+		}
+		
+		
+		this.host.println ("mapped note: " + noteMapped);
+		
+        super.handleGridNote (36 + noteMapped, velocity);
     }
 
 
@@ -304,7 +335,7 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
         final int code = status & 0xF0;
         final int channel = status & 0xF;
 
-		this.host.println ("Incoming midi: " + status + " " + data1 + " " + data2);
+		//this.host.println ("Incoming midi: " + status + " " + data1 + " " + data2);
 
         switch (code)
         {

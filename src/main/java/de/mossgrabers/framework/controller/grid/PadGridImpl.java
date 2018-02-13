@@ -161,7 +161,7 @@ public class PadGridImpl implements PadGrid
     @Override
     public void forceFlush ()
     {
-        for (int i = 36; i < 100; i++)
+        for (int i = 36; i < 128; i++)
         {
             this.currentButtonColors[i] = -1;
             this.currentBlinkColors[i] = -1;
@@ -174,7 +174,7 @@ public class PadGridImpl implements PadGrid
     @Override
     public void flush ()
     {
-        for (int i = 36; i < 100; i++)
+        for (int i = 36; i < 128; i++)
         {
             final int note = this.translateToController (i);
 
@@ -229,7 +229,7 @@ public class PadGridImpl implements PadGrid
     public void turnOff ()
     {
         final int color = this.colorManager.getColor (GRID_OFF);
-        for (int i = 36; i < 100; i++)
+        for (int i = 36; i < 128; i++)
             this.light (i, color, -1, false);
         this.flush ();
     }

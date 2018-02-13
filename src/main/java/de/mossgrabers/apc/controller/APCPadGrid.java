@@ -6,6 +6,7 @@ package de.mossgrabers.apc.controller;
 
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.controller.grid.PadGridImpl;
+import de.mossgrabers.apc.view.Views;
 
 
 /**
@@ -35,7 +36,14 @@ public class APCPadGrid extends PadGridImpl
     @Override
     public void lightEx (final int x, final int y, final int color, final int blinkColor, final boolean fast)
     {
-        this.setLight (68 + x - 8 * y, color, blinkColor, fast);
+		if (surface.getViewManager().isActiveView (Views.VIEW_SESSION) && x == 8)
+		{
+			this.setLight (82 + y + 36, color, blinkColor, fast);
+		}
+		else
+		{
+			this.setLight (68 + x - 8 * y, color, blinkColor, fast);
+		}
     }
 
 
