@@ -232,7 +232,7 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
     @Override
     public boolean isGridNote (final int note)
     {
-        return note <= 39 && super.isGridNote (36 + note);
+        return (note <= 39 && super.isGridNote (36 + note)) || (note >= 82 && note <= 86);
     }
 
 
@@ -303,6 +303,8 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
     {
         final int code = status & 0xF0;
         final int channel = status & 0xF;
+
+		this.host.println ("Incoming midi: " + status + " " + data1 + " " + data2);
 
         switch (code)
         {
