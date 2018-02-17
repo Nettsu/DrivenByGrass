@@ -268,9 +268,6 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
 			}
 		}
 		
-		
-		this.host.println ("mapped note: " + noteMapped);
-		
         super.handleGridNote (36 + noteMapped, velocity);
     }
 

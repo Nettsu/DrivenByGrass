@@ -6,6 +6,8 @@ package de.mossgrabers.framework.daw.data;
 
 import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.Track;
+import com.bitwig.extension.controller.api.DeviceBank;
+import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 
 
 /**
@@ -15,8 +17,9 @@ import com.bitwig.extension.controller.api.Track;
  */
 public class TrackData extends ChannelData
 {
-    protected Track     track;
-    private SlotData [] slots;
+    protected Track          track;
+    private SlotData []      slots;
+    private ParameterData [] remoteControlParameters;
 
 
     /**
@@ -52,6 +55,13 @@ public class TrackData extends ChannelData
         final ClipLauncherSlotBank cs = track.clipLauncherSlotBank ();
         for (int i = 0; i < numScenes; i++)
             this.slots[i] = new SlotData (cs.getItemAt (i), i);
+            
+        DeviceBank deviceCursor = this.track.createDeviceBank(1);
+        CursorRemoteControlsPage controlPageCursor = deviceCursor.getDevice(0).createCursorRemoteControlsPage(8);
+        
+        this.remoteControlParameters = new ParameterData [8];
+        for (int i = 0; i < 8; i++)
+			this.remoteControlParameters[i] = new ParameterData (controlPageCursor.getParameter(i), maxParameterValue);
     }
 
 
@@ -76,6 +86,9 @@ public class TrackData extends ChannelData
         this.track.getCanHoldNoteData ().setIsSubscribed (enable);
         this.track.getCanHoldAudioData ().setIsSubscribed (enable);
         this.track.isStopped ().setIsSubscribed (enable);
+
+		for (int i = 0; i < 8; i++)
+			this.remoteControlParameters[i].enableObservers (enable);
 
         for (final SlotData slot: this.slots)
             slot.enableObservers (enable);
@@ -178,6 +191,16 @@ public class TrackData extends ChannelData
     public String getCrossfadeMode ()
     {
         return this.track.getCrossFadeMode ().get ();
+    }
+    
+    /**
+     * Get the remote control.
+     *
+     * @return The remote control value
+     */
+    public int getRemoteControl (final int index)
+    {
+        return this.remoteControlParameters[index].getValue ();
     }
 
 

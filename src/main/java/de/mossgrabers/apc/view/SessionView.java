@@ -75,11 +75,12 @@ public class SessionView extends AbstractSessionView<APCControlSurface, APCConfi
     @Override
     public void updateSceneButtons ()
     {
-        /*final int green = this.surface.isMkII () ? APCColors.APC_MKII_COLOR_GREEN : APCColors.APC_COLOR_GREEN;
-        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1, green);
-        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_2, green);
-        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_3, green);
-        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_4, green);
-        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_5, green);*/
+        final int black = this.surface.isMkII () ? APCColors.APC_MKII_COLOR_BLACK : APCColors.APC_COLOR_BLACK;
+        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_1, black);
+        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_2, black);
+        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_3, black);
+        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_4, black);
+        this.surface.updateButton (APCControlSurface.APC_BUTTON_SCENE_LAUNCH_5, black);
+		/*this.surface.flush ();*/
     }
 }

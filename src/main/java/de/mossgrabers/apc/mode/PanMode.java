@@ -32,7 +32,8 @@ public class PanMode extends BaseMode
     @Override
     public void setValue (final int index, final int value)
     {
-        this.model.getCurrentTrackBank ().setPan (index, value);
+        //this.model.getCurrentTrackBank ().setPan (index, value);
+        this.model.getCurrentTrackBank ().setRemoteControl (index, 0, value);
     }
 
 
@@ -41,6 +42,7 @@ public class PanMode extends BaseMode
     public Integer getValue (final int index)
     {
         final TrackData track = this.model.getCurrentTrackBank ().getTrack (index);
-        return track.doesExist () ? Integer.valueOf (track.getPan ()) : null;
+        //return track.doesExist () ? Integer.valueOf (track.getPan ()) : null;
+        return track.doesExist () ? Integer.valueOf (track.getRemoteControl (0)) : null;
     }
 }

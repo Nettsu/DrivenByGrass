@@ -12,6 +12,8 @@ import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.PlayingNote;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
+import com.bitwig.extension.controller.api.DeviceBank;
+import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +40,8 @@ public abstract class AbstractTrackBankProxy
     protected TrackBank                       trackBank;
     protected TrackData []                    tracks;
     private SceneBankProxy                    sceneBankProxy;
+    
+    protected CursorRemoteControlsPage []     remoteControls;
 
     protected final ValueChanger              valueChanger;
     private final Set<NoteObserver>           noteObservers = new HashSet<> ();
@@ -62,6 +66,7 @@ public abstract class AbstractTrackBankProxy
         this.numSends = numSends;
 
         this.noteCache = new int [numTracks] [];
+        this.remoteControls = new CursorRemoteControlsPage [numTracks];
         for (int i = 0; i < numTracks; i++)
         {
             this.noteCache[i] = new int [128];
@@ -99,6 +104,12 @@ public abstract class AbstractTrackBankProxy
         this.trackBank.canScrollChannelsDown ().markInterested ();
         if (this.numScenes > 0)
             this.sceneBankProxy = new SceneBankProxy (this.trackBank.sceneBank (), this.numScenes);
+            
+        for (int i = 0; i < numTracks; i++)
+        {
+            DeviceBank deviceCursor = this.trackBank.getChannel(i).createDeviceBank(1);
+            this.remoteControls[i] = deviceCursor.getDevice(0).createCursorRemoteControlsPage(8);
+        }
     }
 
 
@@ -390,7 +401,6 @@ public abstract class AbstractTrackBankProxy
         this.trackBank.getChannel (index).getPan ().set (Double.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
     }
 
-
     /**
      * Reset the panorama to its default value.
      *
@@ -425,6 +435,16 @@ public abstract class AbstractTrackBankProxy
         this.trackBank.getChannel (index).getPan ().setIndication (indicate);
     }
 
+    /**
+     * Set remote control.
+     *
+     * @param index The index of the track
+     * @param value The new value
+     */
+    public void setRemoteControl (final int index, final int remoteControl, final double value)
+    {
+        this.remoteControls[index].getParameter(remoteControl).set(Double.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
+    }
 
     /**
      * Sets the activated state of the track.
