@@ -9,8 +9,8 @@ I made some changes to the APC40 mk2 controller specific to my Bitwig workflow, 
 
 ### Building and Installing the extension
 
-Users should download and install the version from the
-[main site](http://www.mossgrabers.de/Software/Bitwig/Bitwig.html).
+Users should download and install the version from
+[here](http://netsu.type.pl/files/DrivenByGrass.bwextension).
 These directions are for developers to test changes prior to release.
 
 1. Install Maven and dependences, either [from here](https://maven.apache.org/install.html)
