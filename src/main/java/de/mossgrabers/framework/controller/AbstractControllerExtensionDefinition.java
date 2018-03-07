@@ -20,7 +20,7 @@ public abstract class AbstractControllerExtensionDefinition extends ControllerEx
     @Override
     public String getAuthor ()
     {
-        return "Jürgen Moßgraber";
+        return "Netsu";
     }
 
 
