@@ -12,11 +12,11 @@ I made some changes specific to my Bitwig workflow, which include:
 1. Users should download and install the version from
 [here](http://netsu.type.pl/files/DrivenByGrass.bwextension).
 2. Copy that file in the following location depending on your OS:
-- Windows %USERPROFILE%\Documents\Bitwig Studio\Extensions\
-- Mac ~/Documents/Bitwig Studio/Extensions/
-- Linux ~/Bitwig Studio/Extensions/
-3. Start Bitwig Studio and open the Dashboard. Select Settings and Controllers.
-4. Select Add controller manually and look for Akai -> APC4BitwigMod (by Netsu).
+--* Windows `%USERPROFILE%\Documents\Bitwig Studio\Extensions\`
+--* Mac `~/Documents/Bitwig Studio/Extensions/`
+--* Linux `~/Bitwig Studio/Extensions/`
+3. Start Bitwig Studio and open the **Dashboard**. Select **Settings** and **Controllers**.
+4. Select **Add controller manually** and look for **Akai -> APC4BitwigMod (by Netsu)**.
 
 These directions are for developers to test changes prior to release:
 1. Install Maven and dependences, either [from here](https://maven.apache.org/install.html)
