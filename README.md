@@ -16,7 +16,7 @@ I made some changes specific to my Bitwig workflow, which include:
 	* Mac `~/Documents/Bitwig Studio/Extensions/`
 	* Linux `~/Bitwig Studio/Extensions/`
 3. Start Bitwig Studio and open the **Dashboard**. Select **Settings** and **Controllers**.
-4. Select **Add controller manually** and look for **APC4BitwigMod (by Netsu)** in the **Akai** section.
+4. Select **Add controller manually** and look for **APC40 MKII (by Netsu)** in the **Akai** section.
 
 These directions are for developers to test changes prior to release:
 1. Install Maven and dependences, either [from here](https://maven.apache.org/install.html)
