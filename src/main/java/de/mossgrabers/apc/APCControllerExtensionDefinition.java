@@ -18,7 +18,7 @@ public abstract class APCControllerExtensionDefinition extends AbstractControlle
     @Override
     public String getName ()
     {
-        return "APC4BitwigMOD";
+        return "";
     }
 
 
