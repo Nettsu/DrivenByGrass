@@ -151,9 +151,9 @@ public abstract class CursorCommand<S extends ControlSurface<C>, C extends Confi
     {
         final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
         if (this.surface.isShiftPressed ())
-            tb.scrollScenesPageUp ();
-        else
             tb.scrollScenesUp ();
+        else
+            tb.scrollScenesPageUp ();
     }
 
 
@@ -164,9 +164,9 @@ public abstract class CursorCommand<S extends ControlSurface<C>, C extends Confi
     {
         final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
         if (this.surface.isShiftPressed ())
-            tb.scrollScenesPageDown ();
-        else
             tb.scrollScenesDown ();
+        else
+            tb.scrollScenesPageDown ();
     }
 
 
@@ -174,13 +174,8 @@ public abstract class CursorCommand<S extends ControlSurface<C>, C extends Confi
     {
         final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
         final TrackData sel = tb.getSelectedTrack ();
-        final int index = sel == null ? 0 : sel.getIndex () - 1;
-        if (index == -1 || this.surface.isShiftPressed ())
-        {
-            this.scrollTrackBankLeft (sel, index);
-            return;
-        }
-        this.selectTrack (index);
+        final int index = sel == null ? 0 : sel.getIndex ();
+        this.scrollTrackBankLeft (sel, index);
     }
 
 
@@ -188,10 +183,14 @@ public abstract class CursorCommand<S extends ControlSurface<C>, C extends Confi
     {
         final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
         if (!tb.canScrollTracksUp ())
+        {
+            final int newSel = index == -1 || sel == null ? 7 : sel.getIndex () - 1;
+            this.selectTrack (newSel);
             return;
-        tb.scrollTracksPageUp ();
+        }
+        tb.scrollTracksUp ();
         final int newSel = index == -1 || sel == null ? 7 : sel.getIndex ();
-        this.surface.scheduleTask ( () -> this.selectTrack (newSel), BUTTON_REPEAT_INTERVAL);
+        this.selectTrack (newSel);
     }
 
 
@@ -199,13 +198,8 @@ public abstract class CursorCommand<S extends ControlSurface<C>, C extends Confi
     {
         final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
         final TrackData sel = tb.getSelectedTrack ();
-        final int index = sel == null ? 0 : sel.getIndex () + 1;
-        if (index == 8 || this.surface.isShiftPressed ())
-        {
-            this.scrollTrackBankRight (sel, index);
-            return;
-        }
-        this.selectTrack (index);
+        final int index = sel == null ? 0 : sel.getIndex ();
+        this.scrollTrackBankRight (sel, index);
     }
 
 
@@ -213,9 +207,13 @@ public abstract class CursorCommand<S extends ControlSurface<C>, C extends Confi
     {
         final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
         if (!tb.canScrollTracksDown ())
+        {
+            final int newSel = index == 8 || sel == null ? 0 : sel.getIndex () + 1;
+            this.selectTrack (newSel);
             return;
-        tb.scrollTracksPageDown ();
+        }
+        tb.scrollTracksDown ();
         final int newSel = index == 8 || sel == null ? 0 : sel.getIndex ();
-        this.surface.scheduleTask ( () -> this.selectTrack (newSel), BUTTON_REPEAT_INTERVAL);
+        this.selectTrack (newSel);
     }
 }

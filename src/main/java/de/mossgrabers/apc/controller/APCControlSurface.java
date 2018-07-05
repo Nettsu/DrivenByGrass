@@ -236,14 +236,7 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
     @Override
     public boolean isGridNote (final int note)
     {
-		if (this.viewManager.isActiveView (Views.VIEW_SESSION))
-		{
-			return (note <= 39 && super.isGridNote (36 + note)) || (note >= 82 && note <= 86);
-		}
-		else
-		{
-			return (note <= 39 && super.isGridNote (36 + note));
-		}
+		return note <= 39 && super.isGridNote (36 + note);
     }
 
 
@@ -251,24 +244,7 @@ public class APCControlSurface extends AbstractControlSurface<APCConfiguration>
     @Override
     protected void handleGridNote (final int note, final int velocity)
     {
-		int noteMapped = note;
-		
-		if (this.viewManager.isActiveView (Views.VIEW_SESSION))
-		{
-			if (note <= 39)
-			{
-				// if part of original grid note
-				// add one to the note number for each row
-				noteMapped = note + note / 8;
-			}
-			else
-			{
-				// else map scene launch notes to an imaginary ninth column
-				noteMapped = (86 - note) * 9 + 8;
-			}
-		}
-		
-        super.handleGridNote (36 + noteMapped, velocity);
+        super.handleGridNote (36 + note, velocity);
     }
 
 

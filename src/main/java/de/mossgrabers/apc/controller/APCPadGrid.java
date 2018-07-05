@@ -36,14 +36,7 @@ public class APCPadGrid extends PadGridImpl
     @Override
     public void lightEx (final int x, final int y, final int color, final int blinkColor, final boolean fast)
     {
-		if (surface.getViewManager().isActiveView (Views.VIEW_SESSION) && x == 8)
-		{
-			this.setLight (82 + y + 36, color, blinkColor, fast);
-		}
-		else
-		{
-			this.setLight (68 + x - 8 * y, color, blinkColor, fast);
-		}
+        this.setLight (68 + x - 8 * y, color, blinkColor, fast);
     }
 
 

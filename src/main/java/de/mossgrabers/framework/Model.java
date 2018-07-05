@@ -92,7 +92,7 @@ public class Model
         this.colorManager = colorManager;
         this.valueChanger = valueChanger;
 
-        this.numTracks = numTracks < 0 ? 8 : numTracks + 1;
+        this.numTracks = numTracks < 0 ? 8 : numTracks;
         this.numScenes = numScenes < 0 ? 8 : numScenes;
         this.numSends = numSends < 0 ? 6 : numSends;
         this.numFilterColumnEntries = numFilterColumnEntries < 0 ? 16 : numFilterColumnEntries;

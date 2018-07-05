@@ -1,7 +1,6 @@
 # DrivenByGrass
 Bitwig Studio extension for APC40 mk2. This is a fork of DrivenByMoss by Jürgen Moßgraber, 
 I made some changes specific to my Bitwig workflow, which include:
-- Changing the ninth column from launching scenes to launching clips of the ninth track
 - All faders now go up to 0db, instead of +6db
 - The default view is now session view
 - Changed colors to match Bitwig more closely, and changed playing clip color to white
