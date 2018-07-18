@@ -9,6 +9,7 @@ import de.mossgrabers.apc.controller.APCControlSurface;
 import de.mossgrabers.framework.ButtonEvent;
 import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
+import de.mossgrabers.framework.daw.CursorDeviceProxy;
 
 
 /**
@@ -18,6 +19,8 @@ import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
  */
 public class BankRightCommand extends AbstractTriggerCommand<APCControlSurface, APCConfiguration>
 {
+    static final int PARAMETER = 7;
+    
     /**
      * Constructor.
      *
@@ -34,8 +37,24 @@ public class BankRightCommand extends AbstractTriggerCommand<APCControlSurface, 
     @Override
     public void executeNormal (final ButtonEvent event)
     {
+        //if (event == ButtonEvent.DOWN)
+        //    this.model.getCursorDevice ().nextParameterPage ();
+            
         if (event == ButtonEvent.DOWN)
-            this.model.getCursorDevice ().nextParameterPage ();
+        {
+            final CursorDeviceProxy cd = this.model.getCursorDevice ();
+            if (!cd.doesExist ())
+                return;
+            
+            if (cd.getParameterValue(PARAMETER) == 0)
+            {
+                cd.setParameterMax(PARAMETER);
+            }
+            else
+            {
+                cd.setParameter(PARAMETER, 0);
+            }
+        }
     }
 
 
@@ -44,6 +63,6 @@ public class BankRightCommand extends AbstractTriggerCommand<APCControlSurface, 
     public void executeShifted (final ButtonEvent event)
     {
         if (event == ButtonEvent.DOWN)
-            this.model.getCursorDevice ().selectNext ();
+            this.model.getCursorDevice ().nextParameterPage ();
     }
 }

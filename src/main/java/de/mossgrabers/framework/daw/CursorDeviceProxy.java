@@ -463,6 +463,27 @@ public class CursorDeviceProxy
     {
         this.getParameter (index).set (Integer.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
     }
+    
+    /**
+     * Set a parameter.
+     *
+     * @param index The index of the parameter
+     */
+    public void setParameterMax(final int index)
+    {
+        this.getParameter (index).set (Integer.valueOf (this.valueChanger.getUpperBound ()), Integer.valueOf (this.valueChanger.getUpperBound ()));
+    }
+    
+    /**
+     * Get parameter value.
+     *
+     * @param index The index of the parameter
+     * @param value The parameter
+     */
+    public double getParameterValue (final int index)
+    {
+        return this.remoteControls.getParameter (index).get();
+    }
 
 
     /**
