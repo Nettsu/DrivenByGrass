@@ -404,8 +404,8 @@ public class APCControllerExtension extends AbstractControllerExtension<APCContr
 
             surface.updateButton (APCControlSurface.APC_BUTTON_CLIP_TRACK, ColorManager.BUTTON_STATE_OFF);
             surface.updateButton (APCControlSurface.APC_BUTTON_DEVICE_ON_OFF, ColorManager.BUTTON_STATE_OFF);
-            surface.updateButton (APCControlSurface.APC_BUTTON_DEVICE_LEFT, device.getParameterValue(6) > 0.5 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
-            surface.updateButton (APCControlSurface.APC_BUTTON_DEVICE_RIGHT, device.getParameterValue(7) > 0.5 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_DEVICE_LEFT, device.getParameterValue(6) > 0.0 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
+            surface.updateButton (APCControlSurface.APC_BUTTON_DEVICE_RIGHT, device.getParameterValue(7) > 0.0 ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
 
             surface.updateButton (APCControlSurface.APC_BUTTON_BANK, this.model.getBrowser ().isActive () ? ColorManager.BUTTON_STATE_ON : ColorManager.BUTTON_STATE_OFF);
         }
