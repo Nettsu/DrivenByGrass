@@ -1,12 +1,12 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.core;
 
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
 
 
 /**
@@ -17,10 +17,10 @@ import de.mossgrabers.framework.controller.ControlSurface;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public abstract class AbstractPitchbendCommand<S extends ControlSurface<C>, C extends Configuration> implements PitchbendCommand
+public abstract class AbstractPitchbendCommand<S extends IControlSurface<C>, C extends Configuration> implements PitchbendCommand
 {
-    protected final Model model;
-    protected final S     surface;
+    protected final IModel model;
+    protected final S      surface;
 
 
     /**
@@ -29,7 +29,7 @@ public abstract class AbstractPitchbendCommand<S extends ControlSurface<C>, C ex
      * @param model The model
      * @param surface The surface
      */
-    public AbstractPitchbendCommand (final Model model, final S surface)
+    public AbstractPitchbendCommand (final IModel model, final S surface)
     {
         this.model = model;
         this.surface = surface;

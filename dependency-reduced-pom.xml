@@ -4,12 +4,31 @@
   <groupId>de.mossgrabers</groupId>
   <artifactId>DrivenByGrass</artifactId>
   <name>DrivenByGrass</name>
-  <version>LOCAL-21</version>
+  <version>6.11</version>
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M2</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.0.5</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.8.0</version>
         <configuration>
           <optimize>true</optimize>
           <fork>true</fork>
@@ -20,8 +39,19 @@
         </configuration>
       </plugin>
       <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.0.0</version>
+        <version>3.2.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -41,7 +71,7 @@
       <plugin>
         <groupId>com.coderplus.maven.plugins</groupId>
         <artifactId>copy-rename-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.0.1</version>
         <executions>
           <execution>
             <id>rename-file</id>
@@ -56,6 +86,14 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <generateBackupPoms>false</generateBackupPoms>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <repositories>
@@ -64,12 +102,21 @@
       <name>Bitwig Maven Repository</name>
       <url>https://maven.bitwig.com</url>
     </repository>
+    <repository>
+      <id>MavenCentral</id>
+      <name>Maven Central Repository</name>
+      <url>https://mvnrepository.com</url>
+    </repository>
+    <repository>
+      <id>maven-local-repository</id>
+      <url>file:///${project.basedir}/maven-local-repository</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
       <groupId>com.bitwig</groupId>
       <artifactId>extension-api</artifactId>
-      <version>3</version>
+      <version>7</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -77,4 +124,3 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
-

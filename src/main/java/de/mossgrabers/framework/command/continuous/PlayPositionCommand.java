@@ -1,13 +1,13 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.continuous;
 
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AbstractContinuousCommand;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
 
 
 /**
@@ -18,7 +18,7 @@ import de.mossgrabers.framework.controller.ControlSurface;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public class PlayPositionCommand<S extends ControlSurface<C>, C extends Configuration> extends AbstractContinuousCommand<S, C>
+public class PlayPositionCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractContinuousCommand<S, C>
 {
     /**
      * Constructor.
@@ -26,7 +26,7 @@ public class PlayPositionCommand<S extends ControlSurface<C>, C extends Configur
      * @param model The model
      * @param surface The surface
      */
-    public PlayPositionCommand (final Model model, final S surface)
+    public PlayPositionCommand (final IModel model, final S surface)
     {
         super (model, surface);
     }
@@ -36,6 +36,6 @@ public class PlayPositionCommand<S extends ControlSurface<C>, C extends Configur
     @Override
     public void execute (final int value)
     {
-        this.model.getTransport ().changePosition (value <= 61);
+        this.model.getTransport ().changePosition (this.model.getValueChanger ().calcKnobSpeed (value) > 0);
     }
 }

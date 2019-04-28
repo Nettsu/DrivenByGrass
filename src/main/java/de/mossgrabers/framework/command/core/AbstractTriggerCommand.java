@@ -1,14 +1,13 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.core;
 
-import de.mossgrabers.framework.ButtonEvent;
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
-import de.mossgrabers.framework.view.View;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
@@ -19,10 +18,10 @@ import de.mossgrabers.framework.view.View;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public abstract class AbstractTriggerCommand<S extends ControlSurface<C>, C extends Configuration> implements TriggerCommand
+public abstract class AbstractTriggerCommand<S extends IControlSurface<C>, C extends Configuration> implements TriggerCommand
 {
-    protected final Model model;
-    protected final S     surface;
+    protected final IModel model;
+    protected final S      surface;
 
 
     /**
@@ -31,7 +30,7 @@ public abstract class AbstractTriggerCommand<S extends ControlSurface<C>, C exte
      * @param model The model
      * @param surface The surface
      */
-    public AbstractTriggerCommand (final Model model, final S surface)
+    public AbstractTriggerCommand (final IModel model, final S surface)
     {
         this.model = model;
         this.surface = surface;
@@ -62,13 +61,5 @@ public abstract class AbstractTriggerCommand<S extends ControlSurface<C>, C exte
     public void executeShifted (final ButtonEvent event)
     {
         // Intentionally empty
-    }
-
-
-    protected void selectTrack (final int index)
-    {
-        final View activeView = this.surface.getViewManager ().getActiveView ();
-        if (activeView != null)
-            activeView.selectTrack (index);
     }
 }

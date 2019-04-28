@@ -1,13 +1,13 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.continuous;
 
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AbstractContinuousCommand;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.mode.Mode;
 
 
@@ -19,7 +19,7 @@ import de.mossgrabers.framework.mode.Mode;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public class KnobRowModeCommand<S extends ControlSurface<C>, C extends Configuration> extends AbstractContinuousCommand<S, C>
+public class KnobRowModeCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractContinuousCommand<S, C>
 {
     private int index;
 
@@ -31,7 +31,7 @@ public class KnobRowModeCommand<S extends ControlSurface<C>, C extends Configura
      * @param model The model
      * @param surface The surface
      */
-    public KnobRowModeCommand (final int index, final Model model, final S surface)
+    public KnobRowModeCommand (final int index, final IModel model, final S surface)
     {
         super (model, surface);
         this.index = index;
@@ -42,8 +42,8 @@ public class KnobRowModeCommand<S extends ControlSurface<C>, C extends Configura
     @Override
     public void execute (final int value)
     {
-        final Mode m = this.surface.getModeManager ().getActiveMode ();
+        final Mode m = this.surface.getModeManager ().getActiveOrTempMode ();
         if (m != null)
-            m.onValueKnob (this.index, value);
+            m.onKnobValue (this.index, value);
     }
 }

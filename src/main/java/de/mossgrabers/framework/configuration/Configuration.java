@@ -1,12 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.configuration;
 
 import de.mossgrabers.framework.configuration.AbstractConfiguration.BehaviourOnStop;
-
-import com.bitwig.extension.controller.api.Preferences;
+import de.mossgrabers.framework.observer.SettingObserver;
 
 
 /**
@@ -210,9 +209,9 @@ public interface Configuration
     /**
      * Overwrite this function to the settings which are supported by your extension.
      *
-     * @param prefs The preferences
+     * @param settings The user interface settings
      */
-    void init (Preferences prefs);
+    void init (ISettingsUI settings);
 
 
     /**
@@ -236,7 +235,29 @@ public interface Configuration
      *
      * @param value The accent value
      */
-    void setAccentValue (double value);
+    void setAccentValue (int value);
+
+
+    /**
+     * Change the quantize amount.
+     *
+     * @param control The change value
+     */
+    void changeQuantizeAmount (int control);
+
+
+    /**
+     * Set the quantize amount (1-100).
+     *
+     * @param value The value
+     */
+    void setQuantizeAmount (int value);
+
+
+    /**
+     * Reset the quantize amount.
+     */
+    void resetQuantizeAmount ();
 
 
     /**

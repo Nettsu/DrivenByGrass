@@ -1,10 +1,10 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.scale;
 
-import de.mossgrabers.framework.controller.ValueChanger;
+import de.mossgrabers.framework.controller.IValueChanger;
 import de.mossgrabers.framework.scale.ScaleGrid.Orientation;
 
 import java.util.Arrays;
@@ -21,6 +21,10 @@ import java.util.Map;
  */
 public class Scales
 {
+    private static final int            DRUM_NOTE_LOWER          = 4;
+    private static final int            DRUM_NOTE_UPPER          = 100;
+    private static final int            DRUM_DEFAULT_OFFSET      = 16;
+
     /** The names of notes. */
     private static final String []      NOTE_NAMES               =
     {
@@ -130,7 +134,8 @@ public class Scales
     private boolean                     chromaticOn              = false;
     private int                         shift                    = 3;
     private int                         octave                   = 0;
-    private int                         drumOctave               = 0;
+    private int                         drumOffset;
+    private int                         drumDefaultOffset;
     private int                         pianoOctave              = 0;
     private int                         startNote;
     private int                         endNote;
@@ -142,7 +147,7 @@ public class Scales
     private int                         drumNoteEnd              = DRUM_NOTE_END;
 
     private final Map<Scale, ScaleGrid> scaleGrids               = new EnumMap<> (Scale.class);
-    private ValueChanger                valueChanger;
+    private IValueChanger               valueChanger;
 
 
     /**
@@ -154,13 +159,16 @@ public class Scales
      * @param numColumns The number of columns of the pad grid
      * @param numRows The number of rows of the pad grid
      */
-    public Scales (final ValueChanger valueChanger, final int startNote, final int endNote, final int numColumns, final int numRows)
+    public Scales (final IValueChanger valueChanger, final int startNote, final int endNote, final int numColumns, final int numRows)
     {
         this.valueChanger = valueChanger;
         this.startNote = startNote;
         this.endNote = endNote; // last note + 1
         this.numColumns = numColumns;
         this.numRows = numRows;
+
+        this.drumOffset = this.drumNoteStart;
+        this.drumDefaultOffset = DRUM_DEFAULT_OFFSET;
 
         this.generateMatrices ();
     }
@@ -213,6 +221,28 @@ public class Scales
 
 
     /**
+     * Returns true if there is a previous scale to select.
+     *
+     * @return True if there is a previous scale to select
+     */
+    public boolean hasPrevScale ()
+    {
+        return this.selectedScale.ordinal () > 0;
+    }
+
+
+    /**
+     * Returns true if there is a next scale to select.
+     *
+     * @return True if there is a next scale to select
+     */
+    public boolean hasNextScale ()
+    {
+        return this.selectedScale.ordinal () < Scale.values ().length - 1;
+    }
+
+
+    /**
      * Select the previous scale.
      */
     public void prevScale ()
@@ -229,6 +259,48 @@ public class Scales
     {
         final Scale [] values = Scale.values ();
         this.selectedScale = values[Math.min (values.length - 1, this.selectedScale.ordinal () + 1)];
+    }
+
+
+    /**
+     * Returns true if there is a previous scale offset to select.
+     *
+     * @return True if there is a previous scale offset to select
+     */
+    public boolean hasPrevScaleOffset ()
+    {
+        return this.scaleOffset > 0;
+    }
+
+
+    /**
+     * Returns true if there is a next scale offset to select.
+     *
+     * @return True if there is a next scale offset to select
+     */
+    public boolean hasNextScaleOffset ()
+    {
+        return this.scaleOffset < Scales.OFFSETS.length - 1;
+    }
+
+
+
+
+    /**
+     * Select the previous scale offset.
+     */
+    public void prevScaleOffset ()
+    {
+        this.setScaleOffset (this.scaleOffset - 1);
+    }
+
+
+    /**
+     * Select the next scale offset.
+     */
+    public void nextScaleOffset ()
+    {
+        this.setScaleOffset (this.scaleOffset + 1);
     }
 
 
@@ -430,42 +502,108 @@ public class Scales
 
 
     /**
-     * Sets the octave offset for the drum layout.
-     *
-     * @param drumOctave The octave offset
+     * Resetss the octave offset for the drum layout.
      */
-    public void setDrumOctave (final int drumOctave)
+    public void resetDrumOctave ()
     {
-        this.drumOctave = Math.max (DRUM_OCTAVE_LOWER, Math.min (drumOctave, DRUM_OCTAVE_UPPER));
+        this.drumOffset = this.drumNoteStart;
     }
 
 
     /**
-     * Get the octave offset for the drum layout.
+     * Get the current offset of the drum grid.
      *
-     * @return The octave offset
+     * @return The offset
      */
-    public int getDrumOctave ()
+    public int getDrumOffset ()
     {
-        return this.drumOctave;
+        return this.drumOffset;
     }
 
 
     /**
-     * Increases the drum layout by 1 octave.
+     * Returns true if the drum octave can be decreased.
+     *
+     * @return True if the drum octave can be decreased.
+     */
+    public boolean canScrollDrumOctaveDown ()
+    {
+
+        return this.drumOffset - this.drumDefaultOffset >= DRUM_NOTE_LOWER;
+    }
+
+
+    /**
+     * Returns true if the drum octave can be increased.
+     *
+     * @return True if the drum octave can be increased.
+     */
+    public boolean canScrollDrumOctaveUp ()
+    {
+
+        return this.drumOffset + this.drumDefaultOffset <= DRUM_NOTE_UPPER;
+    }
+
+
+    /**
+     * Increases the drum layout by default drum offset.
      */
     public void incDrumOctave ()
     {
-        this.setDrumOctave (this.drumOctave + 1);
+        this.drumOffset = Math.min (DRUM_NOTE_UPPER, this.drumOffset + this.drumDefaultOffset);
     }
 
 
     /**
-     * Decreases the drum layout by 1 octave.
+     * Decreases the drum layout by the default drum offset.
      */
     public void decDrumOctave ()
     {
-        this.setDrumOctave (this.drumOctave - 1);
+        this.drumOffset = Math.max (DRUM_NOTE_LOWER, this.drumOffset - this.drumDefaultOffset);
+    }
+
+
+    /**
+     * Increases the drum layout by the given offset.
+     *
+     * @param offset The offset by which to increase the drum offset
+     */
+    public void incDrumOffset (final int offset)
+    {
+        this.drumOffset = Math.min (100, this.drumOffset + offset);
+    }
+
+
+    /**
+     * Decreases the drum layout by the given offset.
+     *
+     * @param offset The offset by which to decrease the drum offset
+     */
+    public void decDrumOffset (final int offset)
+    {
+        this.drumOffset = Math.max (4, this.drumOffset - offset);
+    }
+
+
+    /**
+     * Set the default value for de-/increasing the drum offset.
+     *
+     * @param drumDefaultOffset The offset
+     */
+    public void setDrumDefaultOffset (final int drumDefaultOffset)
+    {
+        this.drumDefaultOffset = drumDefaultOffset;
+    }
+
+
+    /**
+     * Get the default value for de-/increasing the drum offset.
+     *
+     * @return The offset
+     */
+    public int getDrumDefaultOffset ()
+    {
+        return this.drumDefaultOffset;
     }
 
 
@@ -544,20 +682,31 @@ public class Scales
         final int midiNote = noteMap[note];
         if (midiNote == -1)
             return Scales.SCALE_COLOR_OFF;
-        final int n = (midiNote - Scales.OFFSETS[this.scaleOffset]) % 12;
+        // Add 12 to prevent negative values
+        final int n = (12 + midiNote - Scales.OFFSETS[this.scaleOffset]) % 12;
         if (n == 0)
             return Scales.SCALE_COLOR_OCTAVE;
-        if (this.isChromatic ())
+        if (!this.isChromatic ())
+            return Scales.SCALE_COLOR_NOTE;
+        return this.isInScale (n) ? Scales.SCALE_COLOR_NOTE : Scales.SCALE_COLOR_OUT_OF_SCALE;
+    }
+
+
+
+   /**
+     * Test if the note is part of the selected scale.
+     *
+     * @param note The note to test (0-11)
+     * @return True if it is part of the scale
+     */
+    public boolean isInScale (final int note)
+    {
+        for (final int interval: this.selectedScale.getIntervals ())
         {
-            final int [] notes = this.selectedScale.getIntervals ();
-            for (final int note2: notes)
-            {
-                if (note2 == n)
-                    return Scales.SCALE_COLOR_NOTE;
-            }
-            return Scales.SCALE_COLOR_OUT_OF_SCALE;
+            if (interval == note)
+                return true;
         }
-        return Scales.SCALE_COLOR_NOTE;
+        return false;
     }
 
 
@@ -611,7 +760,8 @@ public class Scales
         final int [] noteMap = Scales.getEmptyMatrix ();
         for (int note = this.startNote; note < this.endNote; note++)
         {
-            final int n = matrix[note - this.startNote] == -1 ? -1 : matrix[note - this.startNote] + this.startNote + this.pianoOctave * 12;
+            final int ns = matrix[note - this.startNote];
+            final int n = ns == -1 ? -1 : ns + this.startNote + this.pianoOctave * 12;
             noteMap[note] = n < 0 || n > 127 ? -1 : n;
         }
         return noteMap;
@@ -619,7 +769,7 @@ public class Scales
 
 
     /**
-     * Get an empty matrix. All notes are off.
+     * Get a new empty matrix. All notes are off.
      *
      * @return The empty matrix
      */
@@ -628,6 +778,20 @@ public class Scales
         final int [] emptyMatrix = new int [128];
         Arrays.fill (emptyMatrix, -1);
         return emptyMatrix;
+    }
+
+
+    /**
+     * Get a new identity matrix. All notes are mapped to themselves.
+     *
+     * @return The identity matrix
+     */
+    public static int [] getIdentityMatrix ()
+    {
+        final int [] identityMatrix = new int [128];
+        for (int i = 0; i < 128; i++)
+            identityMatrix[i] = i;
+        return identityMatrix;
     }
 
 
@@ -641,7 +805,8 @@ public class Scales
         final int [] noteMap = Scales.getEmptyMatrix ();
         for (int note = this.drumNoteStart; note < this.drumNoteEnd; note++)
         {
-            final int n = this.drumMatrix[note - this.drumNoteStart] == -1 ? -1 : this.drumMatrix[note - this.drumNoteStart] + this.drumNoteStart + this.drumOctave * 16;
+            final int ns = this.drumMatrix[note - this.drumNoteStart];
+            final int n = ns == -1 ? -1 : ns + this.drumOffset;
             noteMap[note] = n < 0 || n > 127 ? -1 : n;
         }
         return noteMap;
@@ -716,7 +881,7 @@ public class Scales
      */
     public String getDrumRangeText ()
     {
-        final int s = this.startNote + this.drumOctave * 16;
+        final int s = this.getDrumOffset ();
         return Scales.formatDrumNote (s) + " to " + Scales.formatDrumNote (s + 15);
     }
 
@@ -783,7 +948,7 @@ public class Scales
 
 
     /**
-     * Overwrite to hook in translation for grids who do not send midi notes 36-100.
+     * Overwrite to hook in translation for grids which do not send midi notes 36-100.
      *
      * @param matrix The matrix to translate
      * @return The modified matrix

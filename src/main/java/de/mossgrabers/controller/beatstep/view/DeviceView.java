@@ -1,0 +1,173 @@
+// Written by Jürgen Moßgraber - mossgrabers.de
+// (c) 2017-2019
+// Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
+
+package de.mossgrabers.controller.beatstep.view;
+
+import de.mossgrabers.controller.beatstep.BeatstepConfiguration;
+import de.mossgrabers.controller.beatstep.controller.BeatstepColors;
+import de.mossgrabers.controller.beatstep.controller.BeatstepControlSurface;
+import de.mossgrabers.framework.controller.grid.PadGrid;
+import de.mossgrabers.framework.daw.IChannelBank;
+import de.mossgrabers.framework.daw.ICursorDevice;
+import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.IParameterPageBank;
+import de.mossgrabers.framework.daw.data.IChannel;
+import de.mossgrabers.framework.view.AbstractView;
+
+
+/**
+ * The Device view.
+ *
+ * @author J&uuml;rgen Mo&szlig;graber
+ */
+public class DeviceView extends AbstractView<BeatstepControlSurface, BeatstepConfiguration> implements BeatstepView
+{
+    private TrackEditing extensions;
+    private boolean      isLayer;
+
+
+    /**
+     * Constructor.
+     *
+     * @param surface The controller
+     * @param model The model
+     */
+    public DeviceView (final BeatstepControlSurface surface, final IModel model)
+    {
+        super ("Device", surface, model);
+        this.extensions = new TrackEditing (surface, model);
+        this.isLayer = false;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void onKnob (final int index, final int value)
+    {
+        final ICursorDevice cd = this.model.getCursorDevice ();
+        if (index < 8)
+        {
+            this.extensions.onTrackKnob (index, value);
+            return;
+        }
+
+        cd.getParameterBank ().getItem (index - 8).changeValue (value);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void onGridNote (final int note, final int velocity)
+    {
+        if (velocity == 0)
+            return;
+
+        if (!this.model.hasSelectedDevice ())
+            return;
+
+        final ICursorDevice cd = this.model.getCursorDevice ();
+        final IChannelBank<?> bank = cd.getLayerOrDrumPadBank ();
+        final IChannel sel = bank.getSelectedItem ();
+
+        switch (note - 36)
+        {
+            // Toggle device on/off
+            case 0:
+                cd.toggleEnabledState ();
+                break;
+
+            // Device Left
+            case 1:
+                if (this.isLayer)
+                {
+                    final int index = sel == null || sel.getIndex () == 0 ? 0 : sel.getIndex () - 1;
+                    bank.getItem (index).select ();
+                }
+                else
+                    cd.selectPrevious ();
+                break;
+
+            // Device Right
+            case 2:
+                if (this.isLayer)
+                {
+                    final int index = sel == null ? 0 : sel.getIndex () + 1;
+                    bank.getItem (index > 7 ? 7 : index).select ();
+                }
+                else
+                    cd.selectNext ();
+                break;
+
+            // Enter layer
+            case 3:
+                if (!cd.hasLayers ())
+                    return;
+                if (this.isLayer)
+                {
+                    if (sel != null)
+                        sel.enter ();
+                }
+                else if (sel == null)
+                    bank.getItem (0).select ();
+
+                this.isLayer = !this.isLayer;
+                break;
+
+            // Exit layer
+            case 4:
+                if (this.isLayer)
+                    this.isLayer = false;
+                else
+                {
+                    if (cd.isNested ())
+                    {
+                        cd.selectParent ();
+                        cd.selectChannel ();
+                        this.isLayer = true;
+                    }
+                }
+
+                break;
+
+            case 5:
+                // Intentionally empty
+                break;
+
+            // Param bank down
+            case 6:
+                cd.getParameterBank ().scrollBackwards ();
+                break;
+
+            // Param bank page up
+            case 7:
+                cd.getParameterBank ().scrollForwards ();
+                break;
+
+            default:
+                cd.getParameterPageBank ().selectPage (note - 36 - 8);
+                break;
+        }
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void drawGrid ()
+    {
+        final ICursorDevice cd = this.model.getCursorDevice ();
+        final IParameterPageBank parameterPageBank = cd.getParameterPageBank ();
+        final int selectedItemIndex = parameterPageBank.getSelectedItemIndex ();
+        final PadGrid padGrid = this.surface.getPadGrid ();
+        for (int i = 0; i < parameterPageBank.getPageSize (); i++)
+            padGrid.light (44 + i, i == selectedItemIndex ? BeatstepColors.BEATSTEP_BUTTON_STATE_BLUE : BeatstepColors.BEATSTEP_BUTTON_STATE_OFF);
+        padGrid.light (36, cd.isEnabled () ? BeatstepColors.BEATSTEP_BUTTON_STATE_RED : BeatstepColors.BEATSTEP_BUTTON_STATE_OFF);
+        padGrid.light (37, BeatstepColors.BEATSTEP_BUTTON_STATE_BLUE);
+        padGrid.light (38, BeatstepColors.BEATSTEP_BUTTON_STATE_BLUE);
+        padGrid.light (39, BeatstepColors.BEATSTEP_BUTTON_STATE_RED);
+        padGrid.light (40, BeatstepColors.BEATSTEP_BUTTON_STATE_RED);
+        padGrid.light (41, BeatstepColors.BEATSTEP_BUTTON_STATE_OFF);
+        padGrid.light (42, BeatstepColors.BEATSTEP_BUTTON_STATE_BLUE);
+        padGrid.light (43, BeatstepColors.BEATSTEP_BUTTON_STATE_BLUE);
+    }
+}

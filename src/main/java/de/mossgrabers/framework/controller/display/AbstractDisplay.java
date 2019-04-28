@@ -1,12 +1,11 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.display;
 
-import de.mossgrabers.framework.midi.MidiOutput;
-
-import com.bitwig.extension.controller.api.ControllerHost;
+import de.mossgrabers.framework.daw.IHost;
+import de.mossgrabers.framework.daw.midi.IMidiOutput;
 
 
 /**
@@ -17,22 +16,22 @@ import com.bitwig.extension.controller.api.ControllerHost;
 public abstract class AbstractDisplay implements Display
 {
     /** Time to keep a notification displayed in ms. */
-    public static final int  NOTIFICATION_TIME = 1000;
+    public static final int NOTIFICATION_TIME = 1000;
 
-    protected ControllerHost host;
-    protected MidiOutput     output;
+    protected IHost         host;
+    protected IMidiOutput   output;
 
-    protected int            noOfLines;
-    protected int            noOfCells;
-    protected int            noOfCharacters;
+    protected int           noOfLines;
+    protected int           noOfCells;
+    protected int           noOfCharacters;
 
-    protected final String   emptyLine;
-    protected String         notificationMessage;
-    protected boolean        isNotificationActive;
+    protected final String  emptyLine;
+    protected String        notificationMessage;
+    protected boolean       isNotificationActive;
 
-    protected String []      currentMessage;
-    protected String []      message;
-    protected String []      cells;
+    protected String []     currentMessage;
+    protected String []     message;
+    protected String []     cells;
 
 
     /**
@@ -44,7 +43,7 @@ public abstract class AbstractDisplay implements Display
      * @param noOfCells The number of cells that the display supports
      * @param noOfCharacters The number of characters of 1 row that the display supports
      */
-    public AbstractDisplay (final ControllerHost host, final MidiOutput output, final int noOfLines, final int noOfCells, final int noOfCharacters)
+    public AbstractDisplay (final IHost host, final IMidiOutput output, final int noOfLines, final int noOfCells, final int noOfCharacters)
     {
         this.host = host;
         this.output = output;
@@ -143,18 +142,11 @@ public abstract class AbstractDisplay implements Display
     @Override
     public void notify (final String message)
     {
-        this.notify (message, false, true);
-    }
+        if (message == null)
+            return;
 
-
-    /** {@inheritDoc} */
-    @Override
-    public void notify (final String message, final boolean onDisplay, final boolean onScreen)
-    {
-        if (onScreen)
-            this.host.showPopupNotification (message);
-        if (onDisplay)
-            this.notifyOnDisplay (message);
+        this.host.showNotification (message);
+        this.notifyOnDisplay (message);
     }
 
 
@@ -196,9 +188,8 @@ public abstract class AbstractDisplay implements Display
     }
 
 
-    /**
-     * Forces the recreation of all row texts. The next call to flush will then send all rows.
-     */
+    /** {@inheritDoc} */
+    @Override
     public void forceFlush ()
     {
         for (int row = 0; row < this.noOfLines; row++)

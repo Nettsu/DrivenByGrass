@@ -1,15 +1,15 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger;
 
-import de.mossgrabers.framework.ButtonEvent;
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
-import de.mossgrabers.framework.daw.BrowserProxy;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IBrowser;
+import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
@@ -20,7 +20,7 @@ import de.mossgrabers.framework.daw.BrowserProxy;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public class BrowserCommand<S extends ControlSurface<C>, C extends Configuration> extends AbstractTriggerCommand<S, C>
+public class BrowserCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractTriggerCommand<S, C>
 {
     private static final int NUMBER_OF_RETRIES = 20;
 
@@ -35,7 +35,7 @@ public class BrowserCommand<S extends ControlSurface<C>, C extends Configuration
      * @param model The model
      * @param surface The surface
      */
-    public BrowserCommand (final Integer browserMode, final Model model, final S surface)
+    public BrowserCommand (final Integer browserMode, final IModel model, final S surface)
     {
         super (model, surface);
 
@@ -47,13 +47,8 @@ public class BrowserCommand<S extends ControlSurface<C>, C extends Configuration
     @Override
     public void executeNormal (final ButtonEvent event)
     {
-        if (event != ButtonEvent.UP)
-            return;
-
-        if (this.surface.isSelectPressed ())
-            this.startBrowser (true, false);
-        else
-            this.startBrowser (false, false);
+        if (event == ButtonEvent.UP)
+            this.startBrowser (this.surface.isSelectPressed (), false);
     }
 
 
@@ -74,7 +69,7 @@ public class BrowserCommand<S extends ControlSurface<C>, C extends Configuration
      */
     public void startBrowser (final boolean insertDevice, final boolean beforeCurrent)
     {
-        final BrowserProxy browser = this.model.getBrowser ();
+        final IBrowser browser = this.model.getBrowser ();
 
         // Patch Browser already active?
         if (browser.isActive ())
@@ -83,7 +78,7 @@ public class BrowserCommand<S extends ControlSurface<C>, C extends Configuration
             return;
         }
 
-        if (!insertDevice && this.model.getCursorDevice ().hasSelectedDevice ())
+        if (!insertDevice && this.model.getCursorDevice ().doesExist ())
             browser.browseForPresets ();
         else
         {

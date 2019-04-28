@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.display;
@@ -136,16 +136,6 @@ public interface Display
 
 
     /**
-     * Displays a notification message on the display for a configured time.
-     *
-     * @param message The message to display
-     * @param onDisplay If true displays the message on the screen (in the DAW)
-     * @param onScreen If true displays the message on the display
-     */
-    void notify (final String message, final boolean onDisplay, final boolean onScreen);
-
-
-    /**
      * Flushes (only) the changed texts of all rows.
      */
     void flush ();
@@ -155,4 +145,10 @@ public interface Display
      * If there is any cleanup necessary.
      */
     void shutdown ();
+
+
+    /**
+     * Forces the recreation of all row texts. The next call to flush will then send all rows.
+     */
+    void forceFlush ();
 }

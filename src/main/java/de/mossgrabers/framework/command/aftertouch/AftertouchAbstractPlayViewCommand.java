@@ -1,13 +1,13 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.aftertouch;
 
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AbstractAftertouchCommand;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
 import de.mossgrabers.framework.view.AbstractPlayView;
 
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public class AftertouchAbstractPlayViewCommand<S extends ControlSurface<C>, C extends Configuration> extends AbstractAftertouchCommand<S, C>
+public class AftertouchAbstractPlayViewCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractAftertouchCommand<S, C>
 {
     private AbstractPlayView<S, C> view;
 
@@ -33,7 +33,7 @@ public class AftertouchAbstractPlayViewCommand<S extends ControlSurface<C>, C ex
      * @param model The model
      * @param surface The surface
      */
-    public AftertouchAbstractPlayViewCommand (final AbstractPlayView<S, C> view, final Model model, final S surface)
+    public AftertouchAbstractPlayViewCommand (final AbstractPlayView<S, C> view, final IModel model, final S surface)
     {
         super (model, surface);
         this.view = view;
@@ -53,7 +53,7 @@ public class AftertouchAbstractPlayViewCommand<S extends ControlSurface<C>, C ex
 
             case -2:
                 // Translate notes of Poly aftertouch to current note mapping
-                final int n = this.view.getMidiNoteFromGrid (note);
+                final int n = this.view.getKeyManager ().getMidiNoteFromGrid (note);
                 if (n != -1)
                     this.surface.sendMidiEvent (0xA0, n, value);
                 break;

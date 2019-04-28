@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view;
@@ -8,6 +8,7 @@ import de.mossgrabers.framework.command.core.AftertouchCommand;
 import de.mossgrabers.framework.command.core.ContinuousCommand;
 import de.mossgrabers.framework.command.core.PitchbendCommand;
 import de.mossgrabers.framework.command.core.TriggerCommand;
+import de.mossgrabers.framework.utils.FrameworkException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,14 +76,13 @@ public class ViewManager
 
         view = this.getActiveView ();
         if (view == null)
-            throw new RuntimeException ("Trying to activate view that does not exist: " + viewId);
+            throw new FrameworkException ("Trying to activate view that does not exist: " + viewId);
 
         view.onActivate ();
 
         // Notify all view change listeners
         for (final ViewChangeListener listener: this.viewChangeListeners)
             listener.call (this.previousViewId, this.activeViewId);
-
     }
 
 

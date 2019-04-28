@@ -1,14 +1,14 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view;
 
-import de.mossgrabers.framework.ButtonEvent;
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
-import de.mossgrabers.framework.daw.CursorClipProxy;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.INoteClip;
+import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
@@ -19,26 +19,37 @@ import de.mossgrabers.framework.daw.CursorClipProxy;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public abstract class AbstractSequencerView<S extends ControlSurface<C>, C extends Configuration> extends AbstractView<S, C> implements SceneView
+public abstract class AbstractSequencerView<S extends IControlSurface<C>, C extends Configuration> extends AbstractView<S, C> implements SceneView
 {
     /** The color for highlighting a step with no content. */
-    public static final String       COLOR_STEP_HILITE_NO_CONTENT = "COLOR_STEP_HILITE_NO_CONTENT";
+    public static final String    COLOR_STEP_HILITE_NO_CONTENT = "COLOR_STEP_HILITE_NO_CONTENT";
     /** The color for highlighting a step with with content. */
-    public static final String       COLOR_STEP_HILITE_CONTENT    = "COLOR_STEP_HILITE_CONTENT";
+    public static final String    COLOR_STEP_HILITE_CONTENT    = "COLOR_STEP_HILITE_CONTENT";
     /** The color for a step with no content. */
-    public static final String       COLOR_NO_CONTENT             = "COLOR_NO_CONTENT";
+    public static final String    COLOR_NO_CONTENT             = "COLOR_NO_CONTENT";
     /** The color for a step with content. */
-    public static final String       COLOR_CONTENT                = "COLOR_CONTENT";
+    public static final String    COLOR_CONTENT                = "COLOR_CONTENT";
     /** The color for a step with content which is not the start of the note. */
-    public static final String       COLOR_CONTENT_CONT           = "COLOR_CONTENT_CONT";
+    public static final String    COLOR_CONTENT_CONT           = "COLOR_CONTENT_CONT";
     /** The color for a page. */
-    public static final String       COLOR_PAGE                   = "COLOR_PAGE";
+    public static final String    COLOR_PAGE                   = "COLOR_PAGE";
     /** The color for an active page. */
-    public static final String       COLOR_ACTIVE_PAGE            = "COLOR_ACTIVE_PAGE";
+    public static final String    COLOR_ACTIVE_PAGE            = "COLOR_ACTIVE_PAGE";
     /** The color for a selected page. */
-    public static final String       COLOR_SELECTED_PAGE          = "COLOR_SELECTED_PAGE";
+    public static final String    COLOR_SELECTED_PAGE          = "COLOR_SELECTED_PAGE";
+    /** The color for resolution off. */
+    public static final String    COLOR_RESOLUTION_OFF         = "COLOR_RESOLUTION_OFF";
+    /** The color for resolution. */
+    public static final String    COLOR_RESOLUTION             = "COLOR_RESOLUTION";
+    /** The color for selected resolution. */
+    public static final String    COLOR_RESOLUTION_SELECTED    = "COLOR_RESOLUTION_SELECTED";
+    /** The color for transposition. */
+    public static final String    COLOR_TRANSPOSE              = "COLOR_TRANSPOSE";
+    /** The color for selected transposition. */
+    public static final String    COLOR_TRANSPOSE_SELECTED     = "COLOR_TRANSPOSE_SELECTED";
 
-    protected static final double [] RESOLUTIONS                  =
+    /** Resolution values. */
+    public static final double [] RESOLUTIONS                  =
     {
         1,
         2.0 / 3.0,
@@ -50,7 +61,8 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
         1.0 / 12.0
     };
 
-    protected static final String [] RESOLUTION_TEXTS             =
+    /** Resolution texts. */
+    public static final String [] RESOLUTION_TEXTS             =
     {
         "1/4",
         "1/4t",
@@ -62,11 +74,12 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
         "1/32t"
     };
 
-    protected int                    numSequencerRows;
-    protected int                    selectedIndex;
-    protected int                    offsetY;
-    protected CursorClipProxy        clip;
-    protected final Configuration    configuration;
+    protected int                 numSequencerRows;
+    protected int                 selectedIndex;
+    protected final Configuration configuration;
+
+    protected final int           clipRows;
+    protected final int           clipCols;
 
 
     /**
@@ -78,7 +91,7 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
      * @param clipRows The rows of the monitored clip
      * @param clipCols The cols of the monitored clip
      */
-    public AbstractSequencerView (final String name, final S surface, final Model model, final int clipRows, final int clipCols)
+    public AbstractSequencerView (final String name, final S surface, final IModel model, final int clipRows, final int clipCols)
     {
         this (name, surface, model, clipRows, clipCols, clipRows);
     }
@@ -94,19 +107,20 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
      * @param clipCols The cols of the monitored clip
      * @param numSequencerRows The number of displayed rows of the sequencer
      */
-    public AbstractSequencerView (final String name, final S surface, final Model model, final int clipRows, final int clipCols, final int numSequencerRows)
+    public AbstractSequencerView (final String name, final S surface, final IModel model, final int clipRows, final int clipCols, final int numSequencerRows)
     {
         super (name, surface, model);
+
+        this.clipRows = clipRows;
+        this.clipCols = clipCols;
+
         this.configuration = this.surface.getConfiguration ();
 
         this.selectedIndex = 4;
-        this.scales = this.model.getScales ();
-
-        this.offsetY = 0;
 
         this.numSequencerRows = numSequencerRows;
-        this.clip = this.model.createCursorClip (clipCols, clipRows);
-        this.clip.setStepLength (RESOLUTIONS[this.selectedIndex]);
+
+        this.getClip ();
     }
 
 
@@ -115,16 +129,8 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
     public void onActivate ()
     {
         super.onActivate ();
-        this.clip.enableObservers (true);
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public void onDeactivate ()
-    {
-        super.onDeactivate ();
-        this.clip.enableObservers (true);
+        final INoteClip clip = this.getClip ();
+        clip.setStepLength (RESOLUTIONS[this.selectedIndex]);
     }
 
 
@@ -135,7 +141,7 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
         if (event != ButtonEvent.DOWN || !this.model.canSelectedTrackHoldNotes ())
             return;
         this.selectedIndex = 7 - index;
-        this.clip.setStepLength (RESOLUTIONS[this.selectedIndex]);
+        this.getClip ().setStepLength (RESOLUTIONS[this.selectedIndex]);
         this.surface.getDisplay ().notify (RESOLUTION_TEXTS[this.selectedIndex]);
     }
 
@@ -148,7 +154,7 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
     public void onLeft (final ButtonEvent event)
     {
         if (event == ButtonEvent.DOWN)
-            this.clip.scrollStepsPageBackwards ();
+            this.getClip ().scrollStepsPageBackwards ();
     }
 
 
@@ -160,7 +166,7 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
     public void onRight (final ButtonEvent event)
     {
         if (event == ButtonEvent.DOWN)
-            this.clip.scrollStepsPageForward ();
+            this.getClip ().scrollStepsPageForward ();
     }
 
 
@@ -169,9 +175,9 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
      *
      * @return The clip
      */
-    public CursorClipProxy getClip ()
+    public final INoteClip getClip ()
     {
-        return this.clip;
+        return this.model.getNoteClip (this.clipCols, this.clipRows);
     }
 
 
@@ -183,8 +189,9 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
      */
     protected boolean isInXRange (final int x)
     {
-        final int stepSize = this.clip.getNumSteps ();
-        final int start = this.clip.getEditPage () * stepSize;
+        final INoteClip clip = this.getClip ();
+        final int stepSize = clip.getNumSteps ();
+        final int start = clip.getEditPage () * stepSize;
         return x >= start && x < start + stepSize;
     }
 
@@ -197,7 +204,7 @@ public abstract class AbstractSequencerView<S extends ControlSurface<C>, C exten
     protected int getScrollOffset ()
     {
         final int pos = this.numSequencerRows;
-        return pos / 7 * 12 + this.noteMap[pos % 7] - this.noteMap[0];
+        return pos / 7 * 12 + this.keyManager.map (pos % 7) - this.keyManager.map (0);
     }
 
 

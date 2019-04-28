@@ -1,23 +1,21 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller;
 
-import de.mossgrabers.framework.ButtonEvent;
 import de.mossgrabers.framework.configuration.Configuration;
 import de.mossgrabers.framework.controller.color.ColorManager;
 import de.mossgrabers.framework.controller.display.Display;
 import de.mossgrabers.framework.controller.grid.PadGrid;
-import de.mossgrabers.framework.controller.grid.PadGridImpl;
-import de.mossgrabers.framework.midi.MidiInput;
-import de.mossgrabers.framework.midi.MidiOutput;
+import de.mossgrabers.framework.daw.IHost;
+import de.mossgrabers.framework.daw.midi.IMidiInput;
+import de.mossgrabers.framework.daw.midi.IMidiOutput;
 import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.utils.ButtonEvent;
+import de.mossgrabers.framework.utils.LatestTaskExecutor;
 import de.mossgrabers.framework.view.View;
 import de.mossgrabers.framework.view.ViewManager;
-
-import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.NoteInput;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,48 +31,52 @@ import java.util.Map;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public abstract class AbstractControlSurface<C extends Configuration> implements ControlSurface<C>
+public abstract class AbstractControlSurface<C extends Configuration> implements IControlSurface<C>
 {
-    protected static final int                    BUTTON_STATE_INTERVAL = 400;
+    protected static final int                          BUTTON_STATE_INTERVAL = 400;
+    protected static final int                          NUM_NOTES             = 128;
+    protected static final int                          NUM_BUTTONS           = 256;
 
-    protected ControllerHost                      host;
-    protected C                                   configuration;
-    protected ColorManager                        colorManager;
-    protected MidiOutput                          output;
-    protected MidiInput                           input;
-    protected NoteInput                           noteInput;
+    protected final IHost                               host;
+    protected final C                                   configuration;
+    protected final ColorManager                        colorManager;
+    protected final IMidiOutput                         output;
+    protected final IMidiInput                          input;
 
-    protected ViewManager                         viewManager           = new ViewManager ();
-    protected ModeManager                         modeManager           = new ModeManager ();
+    protected final ViewManager                         viewManager           = new ViewManager ();
+    protected final ModeManager                         modeManager           = new ModeManager ();
 
-    protected int                                 selectButtonId        = -1;
-    protected int                                 shiftButtonId         = -1;
-    protected int                                 deleteButtonId        = -1;
-    protected int                                 soloButtonId          = -1;
-    protected int                                 muteButtonId          = -1;
-    protected int                                 leftButtonId          = -1;
-    protected int                                 rightButtonId         = -1;
-    protected int                                 upButtonId            = -1;
-    protected int                                 downButtonId          = -1;
+    protected int                                       selectButtonId        = -1;
+    protected int                                       shiftButtonId         = -1;
+    protected int                                       deleteButtonId        = -1;
+    protected int                                       soloButtonId          = -1;
+    protected int                                       muteButtonId          = -1;
+    protected int                                       leftButtonId          = -1;
+    protected int                                       rightButtonId         = -1;
+    protected int                                       upButtonId            = -1;
+    protected int                                       downButtonId          = -1;
 
-    private int []                                buttons;
-    protected ButtonEvent []                      buttonStates;
-    private int []                                noteVelocities;
-    protected boolean []                          buttonConsumed;
+    private final int []                                buttons;
+    protected final ButtonEvent []                      buttonStates;
+    private final int []                                noteVelocities;
+    protected final boolean []                          buttonConsumed;
 
-    private List<int []>                          buttonCache;
+    private final List<int []>                          buttonCache;
 
-    protected int []                              gridNotes;
+    protected final int []                              gridNotes;
 
-    protected Display                             display;
-    protected PadGridImpl                         pads;
-    protected Map<Integer, Map<Integer, Integer>> triggerCommands       = new HashMap<> ();
-    protected Map<Integer, Map<Integer, Integer>> continuousCommands    = new HashMap<> ();
-    protected Map<Integer, Integer>               noteCommands          = new HashMap<> ();
+    protected Display                                   display;
+    protected final PadGrid                             pads;
+    protected final Map<Integer, Map<Integer, Integer>> triggerCommands       = new HashMap<> ();
+    protected final Map<Integer, Map<Integer, Integer>> continuousCommands    = new HashMap<> ();
+    protected final Map<Integer, Integer>               noteCommands          = new HashMap<> ();
 
-    private boolean []                            gridNoteConsumed;
-    private ButtonEvent []                        gridNoteStates;
-    private int []                                gridNoteVelocities;
+    private final boolean []                            gridNoteConsumed;
+    private final ButtonEvent []                        gridNoteStates;
+    private final int []                                gridNoteVelocities;
+    private int []                                      keyTranslationTable;
+
+    private final LatestTaskExecutor                    flushExecutor         = new LatestTaskExecutor ();
 
 
     /**
@@ -85,29 +87,27 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
      * @param colorManager
      * @param output The midi output
      * @param input The midi input
+     * @param padGrid The pads if any, may be null
      * @param buttons All midi CC which should be treated as a button
      */
-    public AbstractControlSurface (final ControllerHost host, final C configuration, final ColorManager colorManager, final MidiOutput output, final MidiInput input, final int [] buttons)
+    public AbstractControlSurface (final IHost host, final C configuration, final ColorManager colorManager, final IMidiOutput output, final IMidiInput input, final PadGrid padGrid, final int [] buttons)
     {
         this.host = host;
         this.configuration = configuration;
         this.colorManager = colorManager;
+        this.pads = padGrid;
 
         this.output = output;
         this.input = input;
         if (this.input != null)
-        {
-            this.input.init (host);
             this.input.setMidiCallback (this::handleMidi);
-            this.noteInput = this.input.createNoteInput ();
-        }
 
         this.gridNotes = new int [64];
 
         // Button related
         this.buttons = buttons;
-        this.buttonStates = new ButtonEvent [128];
-        this.buttonConsumed = new boolean [128];
+        this.buttonStates = new ButtonEvent [NUM_BUTTONS];
+        this.buttonConsumed = new boolean [NUM_BUTTONS];
         if (this.buttons != null)
         {
             for (final int button: this.buttons)
@@ -119,8 +119,8 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
         // Optimisation for button LED updates, cache 128 possible note values on
         // all 16 midi channels
-        this.buttonCache = new ArrayList<> (128);
-        for (int i = 0; i < 128; i++)
+        this.buttonCache = new ArrayList<> (NUM_BUTTONS);
+        for (int i = 0; i < NUM_BUTTONS; i++)
         {
             final int [] channels = new int [16];
             Arrays.fill (channels, -1);
@@ -128,14 +128,14 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
         }
 
         // Notes
-        this.noteVelocities = new int [128];
+        this.noteVelocities = new int [NUM_NOTES];
 
         // Grid notes
-        this.gridNoteConsumed = new boolean [128];
+        this.gridNoteConsumed = new boolean [NUM_NOTES];
         Arrays.fill (this.gridNoteConsumed, false);
         final int size = 8 * 8;
-        this.gridNoteStates = new ButtonEvent [128];
-        this.gridNoteVelocities = new int [128];
+        this.gridNoteStates = new ButtonEvent [NUM_NOTES];
+        this.gridNoteVelocities = new int [NUM_NOTES];
         for (int i = 0; i < size; i++)
         {
             this.gridNotes[i] = 36 + i;
@@ -206,9 +206,17 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
     /** {@inheritDoc} */
     @Override
-    public MidiOutput getOutput ()
+    public IMidiOutput getOutput ()
     {
         return this.output;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public IMidiInput getInput ()
+    {
+        return this.input;
     }
 
 
@@ -224,13 +232,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void assignTriggerCommand (final int midiCC, final int midiChannel, final Integer commandID)
     {
-        Map<Integer, Integer> channelMap = this.triggerCommands.get (Integer.valueOf (midiCC));
-        if (channelMap == null)
-        {
-            channelMap = new HashMap<> ();
-            this.triggerCommands.put (Integer.valueOf (midiCC), channelMap);
-        }
-        channelMap.put (Integer.valueOf (midiChannel), commandID);
+        this.triggerCommands.computeIfAbsent (Integer.valueOf (midiCC), k -> new HashMap<> ()).put (Integer.valueOf (midiChannel), commandID);
     }
 
 
@@ -320,12 +322,21 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void setKeyTranslationTable (final int [] table)
     {
-        if (this.noteInput == null)
+        this.keyTranslationTable = table;
+        if (this.input == null)
             return;
         final Integer [] t = new Integer [table.length];
         for (int i = 0; i < table.length; i++)
             t[i] = Integer.valueOf (table[i]);
-        this.noteInput.setKeyTranslationTable (t);
+        this.input.setKeyTranslationTable (t);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public int [] getKeyTranslationTable ()
+    {
+        return this.keyTranslationTable;
     }
 
 
@@ -333,12 +344,12 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void setVelocityTranslationTable (final int [] table)
     {
-        if (this.noteInput == null)
+        if (this.input == null)
             return;
         final Integer [] t = new Integer [table.length];
         for (int i = 0; i < table.length; i++)
             t[i] = Integer.valueOf (table[i]);
-        this.noteInput.setVelocityTranslationTable (t);
+        this.input.setVelocityTranslationTable (t);
     }
 
 
@@ -401,6 +412,14 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
             default:
                 return false;
         }
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public int getShiftButtonId ()
+    {
+        return this.shiftButtonId;
     }
 
 
@@ -548,6 +567,23 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
     /** {@inheritDoc} */
     @Override
+    public void clearButtonCache (final int button)
+    {
+        this.buttonCache.get (button)[0] = -1;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void clearButtonCache ()
+    {
+        for (int i = 0; i < NUM_BUTTONS; i++)
+            this.buttonCache.get (i)[0] = -1;
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
     public boolean isButton (final int cc)
     {
         return this.buttonStates[cc] != null;
@@ -574,8 +610,17 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void flush ()
     {
-        this.scheduledFlush ();
-        this.redrawGrid ();
+        this.flushExecutor.execute ( () -> {
+            try
+            {
+                this.scheduledFlush ();
+                this.redrawGrid ();
+            }
+            catch (final RuntimeException ex)
+            {
+                this.host.error ("Crash during flush.", ex);
+            }
+        });
     }
 
 
@@ -583,7 +628,16 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void shutdown ()
     {
-        // Intentionally empty
+        this.flushExecutor.shutdown ();
+
+        for (final int button: this.getButtons ())
+            this.setButton (button, 0);
+
+        if (this.pads != null)
+            this.pads.turnOff ();
+
+        if (this.display != null)
+            this.display.shutdown ();
     }
 
 
@@ -599,23 +653,21 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
         final int code = status & 0xF0;
         final int channel = status & 0xF;
 
-        View view;
         switch (code)
         {
-            // Note on/off
+            // Note off
             case 0x80:
+                this.handleNote (data1, 0);
+                break;
+
+            // Note on
             case 0x90:
-                if (this.isGridNote (data1))
-                    this.handleGridNote (data1, code == 0x80 ? 0 : data2);
-                else
-                    this.handleNoteEvent (data1, code == 0x80 ? 0 : data2);
+                this.handleNote (data1, data2);
                 break;
 
             // Polyphonic Aftertouch
             case 0xA0:
-                view = this.viewManager.getActiveView ();
-                if (view != null)
-                    view.executeAftertouchCommand (data1, data2);
+                this.handlePolyAftertouch (data1, data2);
                 break;
 
             // CC
@@ -625,16 +677,12 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
 
             // Channel Aftertouch
             case 0xD0:
-                view = this.viewManager.getActiveView ();
-                if (view != null)
-                    view.executeAftertouchCommand (-1, data1);
+                this.handleChannelAftertouch (data1);
                 break;
 
             // Pitch Bend
             case 0xE0:
-                view = this.viewManager.getActiveView ();
-                if (view != null)
-                    view.executePitchbendCommand (channel, data1, data2);
+                this.handlePitchBend (channel, data1, data2);
                 break;
 
             default:
@@ -644,11 +692,77 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     }
 
 
+    /**
+     * Handle a note event
+     *
+     * @param note The note
+     * @param velocity The velocity
+     */
+    protected void handleNote (final int note, final int velocity)
+    {
+        if (this.isGridNote (note))
+            this.handleGridNote (note, velocity);
+        else
+            this.handleNoteEvent (note, velocity);
+    }
+
+
+    /**
+     * Handle pitch bend.
+     *
+     * @param channel The MIDI channel
+     * @param data1 First data byte
+     * @param data2 Second data byte
+     */
+    protected void handlePitchBend (final int channel, final int data1, final int data2)
+    {
+        final View view = this.viewManager.getActiveView ();
+        if (view != null)
+            view.executePitchbendCommand (channel, data1, data2);
+    }
+
+
+    /**
+     * Handle channel aftertouch.
+     *
+     * @param data1 First data byte
+     */
+    protected void handleChannelAftertouch (final int data1)
+    {
+        final View view = this.viewManager.getActiveView ();
+        if (view != null)
+            view.executeAftertouchCommand (-1, data1);
+    }
+
+
+    /**
+     * Handle poly aftertouch.
+     *
+     * @param data1 First data byte
+     * @param data2 Second data byte
+     */
+    protected void handlePolyAftertouch (final int data1, final int data2)
+    {
+        final View view = this.viewManager.getActiveView ();
+        if (view != null)
+            view.executeAftertouchCommand (data1, data2);
+    }
+
+
     /** {@inheritDoc} */
     @Override
     public void scheduleTask (final Runnable callback, final long delay)
     {
-        this.host.scheduleTask (callback, delay);
+        this.host.scheduleTask ( () -> {
+            try
+            {
+                callback.run ();
+            }
+            catch (final RuntimeException ex)
+            {
+                this.host.error ("Could not execute scheduled task.", ex);
+            }
+        }, delay);
     }
 
 
@@ -664,7 +778,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void errorln (final String message)
     {
-        this.host.errorln (message);
+        this.host.error (message);
     }
 
 
@@ -672,7 +786,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
     @Override
     public void sendMidiEvent (final int status, final int data1, final int data2)
     {
-        this.noteInput.sendRawMidiEvent (status, data1, data2);
+        this.input.sendRawMidiEvent (status, data1, data2);
     }
 
 
@@ -869,7 +983,7 @@ public abstract class AbstractControlSurface<C extends Configuration> implements
      *
      * @param buttonID The button CC to check
      */
-    private void checkButtonState (final int buttonID)
+    protected void checkButtonState (final int buttonID)
     {
         if (this.buttonStates[buttonID] != ButtonEvent.DOWN)
             return;

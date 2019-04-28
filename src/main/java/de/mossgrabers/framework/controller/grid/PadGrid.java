@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.controller.grid;
@@ -141,4 +141,28 @@ public interface PadGrid
      * @return The note scaled to the controller
      */
     int translateToController (int note);
+
+
+    /**
+     * Get the number the number of rows of the grid.
+     *
+     * @return The number of rows of the grid
+     */
+    int getRows ();
+
+
+    /**
+     * Get the number the number of columns of the grid.
+     *
+     * @return The number of columns of the grid
+     */
+    int getCols ();
+
+
+    /**
+     * Get the start note of the grid.
+     *
+     * @return The start note of the grid
+     */
+    int getStartNote ();
 }

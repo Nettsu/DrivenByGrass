@@ -1,14 +1,16 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.command.trigger;
 
-import de.mossgrabers.framework.ButtonEvent;
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AbstractTriggerCommand;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.mode.ModeManager;
+import de.mossgrabers.framework.mode.Modes;
+import de.mossgrabers.framework.utils.ButtonEvent;
 
 
 /**
@@ -19,7 +21,7 @@ import de.mossgrabers.framework.controller.ControlSurface;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public class MarkerCommand<S extends ControlSurface<C>, C extends Configuration> extends AbstractTriggerCommand<S, C>
+public class MarkerCommand<S extends IControlSurface<C>, C extends Configuration> extends AbstractTriggerCommand<S, C>
 {
     /**
      * Constructor.
@@ -27,7 +29,7 @@ public class MarkerCommand<S extends ControlSurface<C>, C extends Configuration>
      * @param model The model
      * @param surface The surface
      */
-    public MarkerCommand (final Model model, final S surface)
+    public MarkerCommand (final IModel model, final S surface)
     {
         super (model, surface);
     }
@@ -35,7 +37,21 @@ public class MarkerCommand<S extends ControlSurface<C>, C extends Configuration>
 
     /** {@inheritDoc} */
     @Override
-    public void execute (final ButtonEvent event)
+    public void executeNormal (final ButtonEvent event)
+    {
+        if (event != ButtonEvent.DOWN)
+            return;
+        final ModeManager modeManager = this.surface.getModeManager ();
+        if (modeManager.isActiveOrTempMode (Modes.MODE_MARKERS))
+            modeManager.restoreMode ();
+        else
+            modeManager.setActiveMode (Modes.MODE_MARKERS);
+    }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void executeShifted (final ButtonEvent event)
     {
         if (event == ButtonEvent.DOWN)
             this.model.getArranger ().toggleCueMarkerVisibility ();

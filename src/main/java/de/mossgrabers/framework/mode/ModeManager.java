@@ -1,5 +1,5 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.mode;
@@ -61,7 +61,7 @@ public class ModeManager
         final Integer id = modeId == null ? this.defaultModeId : modeId;
 
         // Do nothing if already active
-        if (this.isActiveMode (id))
+        if (this.isActiveOrTempMode (id))
             return;
 
         // Deactivate the current temporary or active mode
@@ -92,29 +92,18 @@ public class ModeManager
             newMode.onActivate ();
         }
 
-        this.notifyObservers (this.previousModeId, this.getActiveModeId ());
-    }
-
-
-    /**
-     * Get the active mode.
-     *
-     * @return The active mode
-     */
-    public Mode getActiveMode ()
-    {
-        return this.modes.get (this.getActiveModeId ());
+        this.notifyObservers (this.previousModeId, this.getActiveOrTempModeId ());
     }
 
 
     /**
      * Get the ID of the active mode.
      *
-     * @return The ID of the active mode
+     * @return The ID
      */
     public Integer getActiveModeId ()
     {
-        return this.temporaryModeId == null ? this.activeModeId : this.temporaryModeId;
+        return this.activeModeId;
     }
 
 
@@ -127,6 +116,41 @@ public class ModeManager
     public boolean isActiveMode (final Integer modeId)
     {
         final Integer mode = this.getActiveModeId ();
+        return mode != null && mode.equals (modeId);
+    }
+
+
+    /**
+     * Get the active or temporary mode if active.
+     *
+     * @return The mode
+     */
+    public Mode getActiveOrTempMode ()
+    {
+        return this.modes.get (this.getActiveOrTempModeId ());
+    }
+
+
+    /**
+     * Get the ID of the active mode or the temporary mode if active.
+     *
+     * @return The ID
+     */
+    public Integer getActiveOrTempModeId ()
+    {
+        return this.temporaryModeId == null ? this.activeModeId : this.temporaryModeId;
+    }
+
+
+    /**
+     * Checks if the mode with the given ID is the active mode or the temporary mode if active.
+     *
+     * @param modeId An ID
+     * @return True if active
+     */
+    public boolean isActiveOrTempMode (final Integer modeId)
+    {
+        final Integer mode = this.getActiveOrTempModeId ();
         return mode != null && mode.equals (modeId);
     }
 
@@ -154,14 +178,26 @@ public class ModeManager
             oldModeId = this.temporaryModeId;
             this.getMode (this.temporaryModeId).onDeactivate ();
             this.temporaryModeId = null;
-            this.getMode (this.activeModeId).onActivate ();
+            Mode mode = this.getMode (this.activeModeId);
+            if (mode == null)
+            {
+                this.activeModeId = this.defaultModeId;
+                mode = this.getMode (this.activeModeId);
+            }
+            mode.onActivate ();
         }
         else if (this.previousModeId != null)
         {
             oldModeId = this.activeModeId;
             this.getMode (this.activeModeId).onDeactivate ();
             this.activeModeId = this.previousModeId;
-            this.getMode (this.activeModeId).onActivate ();
+            Mode mode = this.getMode (this.activeModeId);
+            if (mode == null)
+            {
+                this.activeModeId = this.defaultModeId;
+                mode = this.getMode (this.activeModeId);
+            }
+            mode.onActivate ();
         }
 
         if (oldModeId != null)

@@ -1,22 +1,22 @@
 // Written by Jürgen Moßgraber - mossgrabers.de
-// (c) 2017
+// (c) 2017-2019
 // Licensed under LGPLv3 - http://www.gnu.org/licenses/lgpl-3.0.txt
 
 package de.mossgrabers.framework.view;
 
-import de.mossgrabers.framework.ButtonEvent;
-import de.mossgrabers.framework.Model;
 import de.mossgrabers.framework.command.core.AftertouchCommand;
 import de.mossgrabers.framework.command.core.ContinuousCommand;
 import de.mossgrabers.framework.command.core.PitchbendCommand;
 import de.mossgrabers.framework.command.core.TriggerCommand;
 import de.mossgrabers.framework.configuration.Configuration;
-import de.mossgrabers.framework.controller.ControlSurface;
-import de.mossgrabers.framework.daw.AbstractTrackBankProxy;
-import de.mossgrabers.framework.daw.BitwigColors;
-import de.mossgrabers.framework.daw.data.TrackData;
+import de.mossgrabers.framework.controller.IControlSurface;
+import de.mossgrabers.framework.daw.DAWColors;
+import de.mossgrabers.framework.daw.IModel;
+import de.mossgrabers.framework.daw.data.ITrack;
 import de.mossgrabers.framework.mode.Mode;
 import de.mossgrabers.framework.scale.Scales;
+import de.mossgrabers.framework.utils.ButtonEvent;
+import de.mossgrabers.framework.utils.KeyManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +30,17 @@ import java.util.Map;
  *
  * @author J&uuml;rgen Mo&szlig;graber
  */
-public abstract class AbstractView<S extends ControlSurface<C>, C extends Configuration> implements View
+public abstract class AbstractView<S extends IControlSurface<C>, C extends Configuration> implements View
 {
-    private static final int []                   EMPTY_TABLE        = Scales.getEmptyMatrix ();
+    protected static final int []                 EMPTY_TABLE        = Scales.getEmptyMatrix ();
 
-    protected S                                   surface;
-    protected Model                               model;
+    private final String                          name;
+
+    protected final S                             surface;
+    protected final IModel                        model;
+    protected final Scales                        scales;
+    protected final KeyManager                    keyManager;
+
     private AftertouchCommand                     aftertouchCommand;
     private PitchbendCommand                      pitchbendCommand;
 
@@ -48,11 +53,6 @@ public abstract class AbstractView<S extends ControlSurface<C>, C extends Config
     protected boolean                             canScrollUp;
     protected boolean                             canScrollDown;
 
-    protected Scales                              scales;
-    protected int []                              noteMap;
-
-    private final String                          name;
-
 
     /**
      * Constructor.
@@ -61,11 +61,13 @@ public abstract class AbstractView<S extends ControlSurface<C>, C extends Config
      * @param surface The surface
      * @param model The model
      */
-    public AbstractView (final String name, final S surface, final Model model)
+    public AbstractView (final String name, final S surface, final IModel model)
     {
         this.name = name;
         this.surface = surface;
         this.model = model;
+        this.scales = model.getScales ();
+        this.keyManager = new KeyManager (model, surface.getPadGrid ());
 
         this.canScrollLeft = true;
         this.canScrollRight = true;
@@ -102,9 +104,7 @@ public abstract class AbstractView<S extends ControlSurface<C>, C extends Config
     @Override
     public void selectTrack (final int index)
     {
-        final AbstractTrackBankProxy tb = this.model.getCurrentTrackBank ();
-        tb.select (index);
-        tb.makeVisible (index);
+        this.model.getCurrentTrackBank ().getItem (index).select ();
     }
 
 
@@ -112,7 +112,7 @@ public abstract class AbstractView<S extends ControlSurface<C>, C extends Config
     @Override
     public void updateControlSurface ()
     {
-        final Mode m = this.surface.getModeManager ().getActiveMode ();
+        final Mode m = this.surface.getModeManager ().getActiveOrTempMode ();
         if (m != null)
         {
             m.updateDisplay ();
@@ -272,16 +272,28 @@ public abstract class AbstractView<S extends ControlSurface<C>, C extends Config
      *            the default color
      * @return The color ID
      */
-    public String getColor (final int pad, final TrackData track)
+    protected String getColor (final int pad, final ITrack track)
     {
-        final String colorID = this.scales.getColor (this.noteMap, pad);
-        // Replace the octave color with the track color
+        return replaceOctaveColorWithTrackColor (track, this.keyManager.getColor (pad));
+    }
+
+
+    /**
+     * If the given color ID is the octave color ID it will be replaced with the track color ID.
+     *
+     * @param track A track to use the track color for coloring the octave notes, set to null to use
+     *            the default color
+     * @param colorID
+     * @return The color ID
+     */
+    protected static String replaceOctaveColorWithTrackColor (final ITrack track, final String colorID)
+    {
         if (Scales.SCALE_COLOR_OCTAVE.equals (colorID))
         {
             if (track == null)
                 return Scales.SCALE_COLOR_OCTAVE;
             final double [] color = track.getColor ();
-            final String c = BitwigColors.getColorIndex (color[0], color[1], color[2]);
+            final String c = DAWColors.getColorIndex (color[0], color[1], color[2]);
             return c == null ? Scales.SCALE_COLOR_OCTAVE : c;
         }
         return colorID;
@@ -310,6 +322,27 @@ public abstract class AbstractView<S extends ControlSurface<C>, C extends Config
     @Override
     public void updateNoteMapping ()
     {
-        this.surface.setKeyTranslationTable (EMPTY_TABLE);
+        this.delayedUpdateNoteMapping (EMPTY_TABLE);
+    }
+
+
+    protected void delayedUpdateNoteMapping (final int [] matrix)
+    {
+        this.surface.scheduleTask ( () -> {
+            this.keyManager.setNoteMatrix (matrix);
+            if (matrix.length == 128)
+                this.surface.setKeyTranslationTable (this.scales.translateMatrixToGrid (matrix));
+        }, 6);
+    }
+
+
+    /**
+     * Get the key manager.
+     *
+     * @return The key manager
+     */
+    public KeyManager getKeyManager ()
+    {
+        return this.keyManager;
     }
 }
