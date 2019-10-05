@@ -128,6 +128,13 @@ public class ParameterImpl extends AbstractItemImpl implements IParameter
         this.parameter.set (Integer.valueOf (value), Integer.valueOf (this.valueChanger.getUpperBound ()));
     }
 
+     /** {@inheritDoc} */
+    @Override
+    public void setValue (final double value)
+    {
+        this.parameter.set (Double.valueOf (value));
+    }
+
 
     /** {@inheritDoc} */
     @Override

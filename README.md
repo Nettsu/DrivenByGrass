@@ -1,13 +1,11 @@
 # DrivenByGrass
 Bitwig Studio extension for APC40 mk2. This is a fork of DrivenByMoss by Jürgen Moßgraber, 
 I made some changes specific to my Bitwig workflow, which include:
-- All faders now go up to 0db, instead of +6db
+- All faders now go up to 0db (instead of +6db) and the curve is adjusted so that -6db is about halfway on the fader
 - The default view is now session view
 - Changed colors to match Bitwig more closely, and changed playing clip color to white
 - 'Pan' mode is now used to control the first remote control on each track
 - Arrow buttons move scene bank by five scenes and track bank by one track (instead of the other way around)
-- Bank arrows switch parameter pages with the 'shift' button, without it they switch remote controls 7 and 8 between 0% and 100%
-  (useful for remote controls which are buttons instead of knobs)
 
 ### Building and Installing the extension
 

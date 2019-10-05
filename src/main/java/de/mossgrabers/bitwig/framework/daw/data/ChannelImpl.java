@@ -36,6 +36,7 @@ public class ChannelImpl extends AbstractDeviceChainImpl<Channel> implements ICh
     private IParameter            panParameter;
     private IParameter            remoteControlParameter;
     private ISendBank             sendBank;
+    private IHost                 host;
 
 
     /**
@@ -51,6 +52,7 @@ public class ChannelImpl extends AbstractDeviceChainImpl<Channel> implements ICh
     {
         super (index, channel);
 
+        this.host = host;
         this.deviceChain = channel;
         this.valueChanger = valueChanger;
 
@@ -173,7 +175,9 @@ public class ChannelImpl extends AbstractDeviceChainImpl<Channel> implements ICh
     @Override
     public void setVolume (final int value)
     {
-        this.volumeParameter.setValue (value * 79 / 100);
+        double valueScaled = value / 127.0;
+        this.host.println(Double.toString(valueScaled));
+        this.volumeParameter.setValue (((-Math.pow(valueScaled-1.0, 2) + 1.0) * 0.7935));
     }
 
 

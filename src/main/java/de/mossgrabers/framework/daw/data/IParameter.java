@@ -51,6 +51,13 @@ public interface IParameter extends IItem
      */
     void setValue (int value);
 
+    /**
+     * Sets the value.
+     *
+     * @param value The new value to set
+     */
+    void setValue (double value);
+
 
     /**
      * Change the value.
