@@ -176,7 +176,6 @@ public class ChannelImpl extends AbstractDeviceChainImpl<Channel> implements ICh
     public void setVolume (final int value)
     {
         double valueScaled = value / 127.0;
-        this.host.println(Double.toString(valueScaled));
         this.volumeParameter.setValue (((-Math.pow(valueScaled-1.0, 2) + 1.0) * 0.7935));
     }
 
